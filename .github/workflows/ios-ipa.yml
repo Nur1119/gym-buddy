@@ -6,6 +6,7 @@ on:
     paths:
       - 'ios/**'
       - '.github/workflows/ios-ipa.yml'
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -109,3 +110,9 @@ jobs:
           name: xcodebuild-log
           path: ios/GymBuddy/build/xcodebuild.log
           if-no-files-found: ignore
+
+      - name: Create release (on tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ios/GymBuddy/build/GymBuddy-unsigned.ipa

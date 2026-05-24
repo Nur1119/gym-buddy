@@ -6,6 +6,7 @@ on:
     paths:
       - 'android/**'
       - '.github/workflows/android-apk.yml'
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
