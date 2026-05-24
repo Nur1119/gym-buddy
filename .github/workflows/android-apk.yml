@@ -8,6 +8,9 @@ on:
       - '.github/workflows/android-apk.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -51,10 +54,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAIL=$(tail -n 350 /tmp/gradle.log)
-          BODY=$(printf '### Android build failure\n\n```\n%s\n```' "$TAIL")
-          jq -n --arg b "$BODY" '{body:$b}' > /tmp/payload.json
-          gh api -X POST repos/${{ github.repository }}/commits/${{ github.sha }}/comments --input /tmp/payload.json
+          set -x
+          {
+            echo '### Android build failure'
+            echo
+            echo '```'
+            tail -n 350 /tmp/gradle.log
+            echo '```'
+          } > /tmp/comment.md
+          jq -Rs '{body: .}' < /tmp/comment.md > /tmp/payload.json
+          gh api -X POST "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" --input /tmp/payload.json
 
       - name: Upload full gradle log
         if: always()

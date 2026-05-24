@@ -8,6 +8,9 @@ on:
       - '.github/workflows/ios-ipa.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: macos-14
@@ -50,10 +53,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAIL=$(tail -n 400 build/xcodebuild.log)
-          BODY=$(printf '### iOS build failure\n\n```\n%s\n```' "$TAIL")
-          jq -n --arg b "$BODY" '{body:$b}' > /tmp/payload.json
-          gh api -X POST repos/${{ github.repository }}/commits/${{ github.sha }}/comments --input /tmp/payload.json
+          set -x
+          {
+            echo '### iOS build failure'
+            echo
+            echo '```'
+            tail -n 400 build/xcodebuild.log
+            echo '```'
+          } > /tmp/comment.md
+          jq -Rs '{body: .}' < /tmp/comment.md > /tmp/payload.json
+          gh api -X POST "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" --input /tmp/payload.json
 
       - name: Package unsigned .ipa
         if: success()
