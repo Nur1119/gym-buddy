@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GymBuddy — Fitness × Match</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, system-ui, sans-serif;
+    background: #04060d;
+    -webkit-font-smoothing: antialiased;
+    color: #fff;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  button { font-family: inherit; }
+  input, textarea, select { font-family: inherit; }
+  /* Slim scrollbars inside frames */
+  ::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#7C5CFF"/>
+        <stop offset="0.5" stop-color="#00C2FF"/>
+        <stop offset="1" stop-color="#3DDC97"/>
+      </linearGradient>
+    </defs>
+    <rect width="100" height="100" rx="22" fill="url(#g)"/>
+    <path d="M30 50 Q30 35 50 35 Q70 35 70 50 Q70 67 50 80 Q30 67 30 50 Z" fill="#fff"/>
+    <path d="M40 47 L46 53 L60 39" stroke="#7C5CFF" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="theme.jsx"></script>
+<script type="text/babel" src="i18n.jsx"></script>
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="ui.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="android-frame.jsx"></script>
+<script type="text/babel" src="screens-home.jsx"></script>
+<script type="text/babel" src="screens-workout.jsx"></script>
+<script type="text/babel" src="screens-discover.jsx"></script>
+<script type="text/babel" src="screens-profile.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+
+</body>
+</html>
