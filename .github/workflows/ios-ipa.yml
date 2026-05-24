@@ -1,0 +1,86 @@
+name: Build iOS IPA (unsigned)
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-ipa.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: ios/GymBuddy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Build unsigned .app for device
+        id: build
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild \
+            -project GymBuddy.xcodeproj \
+            -scheme GymBuddy \
+            -configuration Debug \
+            -sdk iphoneos \
+            -derivedDataPath build/DerivedData \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            DEVELOPMENT_TEAM="" \
+            ONLY_ACTIVE_ARCH=NO \
+            build 2>&1 | tee build/xcodebuild.log
+
+      - name: Dump build log on failure
+        if: failure()
+        run: |
+          echo "## xcodebuild failure (tail 500 lines)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 500 ios/GymBuddy/build/xcodebuild.log >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Package unsigned .ipa
+        if: success()
+        run: |
+          APP_PATH=$(find build/DerivedData/Build/Products -type d -name "GymBuddy.app" | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "GymBuddy.app not found" >&2
+            find build/DerivedData/Build/Products -maxdepth 4 -type d
+            exit 1
+          fi
+          echo "App at: $APP_PATH"
+          mkdir -p build/Payload
+          cp -R "$APP_PATH" build/Payload/
+          cd build
+          zip -qry GymBuddy-unsigned.ipa Payload
+          ls -lh GymBuddy-unsigned.ipa
+
+      - name: Upload IPA artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: GymBuddy-unsigned-ipa
+          path: ios/GymBuddy/build/GymBuddy-unsigned.ipa
+          if-no-files-found: error
+
+      - name: Upload full xcodebuild log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: ios/GymBuddy/build/xcodebuild.log
+          if-no-files-found: ignore
