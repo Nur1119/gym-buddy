@@ -1,0 +1,4231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GymBuddy — Fitness × Match</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, system-ui, sans-serif;
+    background: #04060d;
+    -webkit-font-smoothing: antialiased;
+    color: #fff;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  button { font-family: inherit; }
+  input, textarea, select { font-family: inherit; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+
+// ═══ theme.jsx ═══
+// theme.jsx — design tokens, theme context
+
+const THEMES = {
+  light: {
+    bg: '#F4F6FB',
+    bgGrad: 'linear-gradient(180deg, #F4F6FB 0%, #EAEEF6 100%)',
+    surface: '#FFFFFF',
+    surface2: '#F1F4FA',
+    surfaceElevated: '#FFFFFF',
+    border: '#E4E8F0',
+    borderStrong: '#D2D8E3',
+    text: '#0B1020',
+    textMuted: '#5B6478',
+    textDim: '#8B92A8',
+    overlay: 'rgba(11,16,32,0.45)',
+    chip: '#EEF1F8',
+    danger: '#FF3B5C',
+    success: '#19C37D',
+    warn: '#FFB020',
+    statusBarDark: false,
+  },
+  dark: {
+    bg: '#0A0E1A',
+    bgGrad: 'radial-gradient(120% 80% at 50% -10%, #1A1F36 0%, #0A0E1A 60%)',
+    surface: '#141A2B',
+    surface2: '#1B2238',
+    surfaceElevated: '#1F2740',
+    border: '#262E47',
+    borderStrong: '#39426A',
+    text: '#FFFFFF',
+    textMuted: '#A2ABC5',
+    textDim: '#6A7390',
+    overlay: 'rgba(0,0,0,0.6)',
+    chip: '#1F2740',
+    danger: '#FF4D6D',
+    success: '#3DDC97',
+    warn: '#FFC857',
+    statusBarDark: true,
+  },
+};
+
+// Accent palettes — share chroma, vary hue
+const ACCENT_PALETTES = {
+  aurora: {
+    p1: '#3DDC97', // green
+    p2: '#00C2FF', // cyan
+    p3: '#7C5CFF', // purple
+    grad: 'linear-gradient(135deg, #7C5CFF 0%, #00C2FF 55%, #3DDC97 100%)',
+    gradSoft: 'linear-gradient(135deg, rgba(124,92,255,0.18) 0%, rgba(0,194,255,0.18) 55%, rgba(61,220,151,0.18) 100%)',
+    like: '#3DDC97',
+    nope: '#FF4D6D',
+    superLike: '#00C2FF',
+    boost: '#B967FF',
+  },
+  sunset: {
+    p1: '#FFB020',
+    p2: '#FF4D6D',
+    p3: '#B967FF',
+    grad: 'linear-gradient(135deg, #FFB020 0%, #FF4D6D 50%, #B967FF 100%)',
+    gradSoft: 'linear-gradient(135deg, rgba(255,176,32,0.18) 0%, rgba(255,77,109,0.18) 50%, rgba(185,103,255,0.18) 100%)',
+    like: '#19C37D',
+    nope: '#FF4D6D',
+    superLike: '#00C2FF',
+    boost: '#FFB020',
+  },
+  electric: {
+    p1: '#00E5FF',
+    p2: '#39FF14',
+    p3: '#FFEB3B',
+    grad: 'linear-gradient(135deg, #00E5FF 0%, #39FF14 50%, #FFEB3B 100%)',
+    gradSoft: 'linear-gradient(135deg, rgba(0,229,255,0.18) 0%, rgba(57,255,20,0.18) 50%, rgba(255,235,59,0.18) 100%)',
+    like: '#39FF14',
+    nope: '#FF1744',
+    superLike: '#00E5FF',
+    boost: '#FFEB3B',
+  },
+};
+
+const ThemeCtx = React.createContext(null);
+
+function ThemeProvider({ mode, accent, children }) {
+  const t = THEMES[mode];
+  const a = ACCENT_PALETTES[accent] || ACCENT_PALETTES.aurora;
+  const value = React.useMemo(() => ({ ...t, ...a, mode, accentName: accent }), [mode, accent]);
+  return <ThemeCtx.Provider value={value}>{children}</ThemeCtx.Provider>;
+}
+
+function useTheme() {
+  return React.useContext(ThemeCtx);
+}
+
+window.ThemeProvider = ThemeProvider;
+window.useTheme = useTheme;
+window.THEMES = THEMES;
+window.ACCENT_PALETTES = ACCENT_PALETTES;
+
+// ═══ i18n.jsx ═══
+// i18n.jsx — bilingual strings
+
+const STRINGS = {
+  en: {
+    // tabs
+    home: 'Home', workout: 'Workout', discover: 'Discover', friends: 'Friends', profile: 'Profile',
+    // home
+    greeting: 'Good evening', readyToTrain: 'Ready to train today?',
+    todayPlan: "Today's plan", noWorkoutToday: 'No workout planned today',
+    thisWeek: 'This week', streak: 'Streak', xp: 'XP', coins: 'Coins',
+    quickStart: 'Quick start', startWorkout: 'Start workout', emptyWorkout: 'Empty workout',
+    generateAi: 'AI workout', recentRoutines: 'Recent routines',
+    weeklyVolume: 'Weekly volume', muscleHeatmap: 'Muscle activity',
+    // workout
+    tracker: 'Tracker', myPlan: 'My plan', plannedWorkout: 'Planned workout',
+    createPlan: 'Create plan', startEmptyWorkout: 'Start empty workout',
+    generateWorkout: 'AI workout', routines: 'Routines', myRoutines: 'My routines',
+    exercises: 'Exercises', createCustom: 'Create custom exercise',
+    addExercise: 'Add exercise', finishWorkout: 'Finish', restTimer: 'Rest',
+    sets: 'sets', reps: 'reps', weight: 'kg', set: 'Set',
+    // discover (Tinder)
+    discoverTitle: 'Discover', discoverSub: 'Find your gym buddy',
+    filters: 'Filters', matches: 'Matches', boost: 'Boost', superLike: 'Super Like',
+    rewind: 'Rewind', like: 'Like', nope: 'Pass',
+    itsAMatch: "It's a match!", sendMessage: 'Send a message',
+    inviteToGym: 'Invite to gym', sharedWorkout: 'Shared workout',
+    distance: 'km away', goal: 'Goal', schedule: 'Schedule', level: 'Level',
+    // profile
+    editProfile: 'Edit profile', settings: 'Settings', stats: 'Statistics',
+    medals: 'Medals', ranks: 'Ranks', calendar: 'Calendar', nutrition: 'Nutrition',
+    achievements: 'Achievements',
+    // settings
+    appearance: 'Appearance', language: 'Language', units: 'Units',
+    notifications: 'Notifications', account: 'Account', logout: 'Logout',
+    privacy: 'Privacy', terms: 'Terms',
+    // generic
+    save: 'Save', cancel: 'Cancel', done: 'Done', next: 'Next', back: 'Back',
+    add: 'Add', edit: 'Edit', delete: 'Delete', search: 'Search',
+    name: 'Name', age: 'Age', height: 'Height', weightLabel: 'Weight', bio: 'Bio',
+    today: 'Today', yesterday: 'Yesterday',
+    // workout categories
+    push: 'Push', pull: 'Pull', legs: 'Legs', upper: 'Upper', lower: 'Lower',
+    full: 'Full body', cardio: 'Cardio', core: 'Core',
+    // nutrition
+    calories: 'Calories', protein: 'Protein', carbs: 'Carbs', fats: 'Fats',
+    addMeal: 'Add meal', breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack',
+    // friends
+    online: 'Online', requests: 'Requests', leaderboard: 'Leaderboard',
+    // chat
+    typeMessage: 'Type a message…', matchedOn: 'Matched',
+    // misc
+    streakDays: 'day streak', newMatch: 'New match',
+    suggestWorkout: 'Suggest a workout',
+  },
+  ru: {
+    home: 'Главная', workout: 'Тренировки', discover: 'Знакомства', friends: 'Друзья', profile: 'Профиль',
+    greeting: 'Добрый вечер', readyToTrain: 'Готов потренироваться?',
+    todayPlan: 'План на сегодня', noWorkoutToday: 'На сегодня тренировок нет',
+    thisWeek: 'На этой неделе', streak: 'Стрик', xp: 'XP', coins: 'Монеты',
+    quickStart: 'Быстрый старт', startWorkout: 'Начать тренировку', emptyWorkout: 'Пустая тренировка',
+    generateAi: 'AI-тренировка', recentRoutines: 'Недавние рутины',
+    weeklyVolume: 'Объём за неделю', muscleHeatmap: 'Активность мышц',
+    tracker: 'Трекер', myPlan: 'Мой план', plannedWorkout: 'Запланированная',
+    createPlan: 'Создать план', startEmptyWorkout: 'Пустая тренировка',
+    generateWorkout: 'AI-тренировка', routines: 'Рутины', myRoutines: 'Мои рутины',
+    exercises: 'Упражнения', createCustom: 'Создать упражнение',
+    addExercise: 'Добавить упражнение', finishWorkout: 'Завершить', restTimer: 'Отдых',
+    sets: 'подходов', reps: 'повторов', weight: 'кг', set: 'Сет',
+    discoverTitle: 'Знакомства', discoverSub: 'Найди партнёра по залу',
+    filters: 'Фильтры', matches: 'Совпадения', boost: 'Буст', superLike: 'Супер-лайк',
+    rewind: 'Назад', like: 'Лайк', nope: 'Пропустить',
+    itsAMatch: 'Это совпадение!', sendMessage: 'Написать сообщение',
+    inviteToGym: 'Пригласить в зал', sharedWorkout: 'Совместная тренировка',
+    distance: 'км', goal: 'Цель', schedule: 'График', level: 'Уровень',
+    editProfile: 'Изменить профиль', settings: 'Настройки', stats: 'Статистика',
+    medals: 'Медали', ranks: 'Рейтинг', calendar: 'Календарь', nutrition: 'Питание',
+    achievements: 'Достижения',
+    appearance: 'Тема', language: 'Язык', units: 'Единицы',
+    notifications: 'Уведомления', account: 'Аккаунт', logout: 'Выйти',
+    privacy: 'Конфиденциальность', terms: 'Условия',
+    save: 'Сохранить', cancel: 'Отмена', done: 'Готово', next: 'Далее', back: 'Назад',
+    add: 'Добавить', edit: 'Изменить', delete: 'Удалить', search: 'Поиск',
+    name: 'Имя', age: 'Возраст', height: 'Рост', weightLabel: 'Вес', bio: 'О себе',
+    today: 'Сегодня', yesterday: 'Вчера',
+    push: 'Жим', pull: 'Тяга', legs: 'Ноги', upper: 'Верх', lower: 'Низ',
+    full: 'Всё тело', cardio: 'Кардио', core: 'Кор',
+    calories: 'Калории', protein: 'Белки', carbs: 'Углеводы', fats: 'Жиры',
+    addMeal: 'Добавить приём', breakfast: 'Завтрак', lunch: 'Обед', dinner: 'Ужин', snack: 'Перекус',
+    online: 'В сети', requests: 'Заявки', leaderboard: 'Лидерборд',
+    typeMessage: 'Сообщение…', matchedOn: 'Совпали',
+    streakDays: 'дней подряд', newMatch: 'Новое совпадение',
+    suggestWorkout: 'Предложить тренировку',
+  },
+};
+
+const I18nCtx = React.createContext(null);
+
+function I18nProvider({ lang, children }) {
+  const t = React.useCallback((key) => (STRINGS[lang] && STRINGS[lang][key]) || STRINGS.en[key] || key, [lang]);
+  return <I18nCtx.Provider value={{ t, lang }}>{children}</I18nCtx.Provider>;
+}
+
+function useI18n() {
+  return React.useContext(I18nCtx);
+}
+
+window.I18nProvider = I18nProvider;
+window.useI18n = useI18n;
+
+// ═══ data.jsx ═══
+// data.jsx — mock data for the entire app
+
+// ── Exercise library
+const EXERCISE_LIB = [
+  { id: 'e1', name: 'Bench Press', nameRu: 'Жим лёжа', muscle: 'Chest', muscleRu: 'Грудь', equipment: 'Barbell', icon: '🏋️' },
+  { id: 'e2', name: 'Incline Dumbbell Press', nameRu: 'Жим гантелей наклонно', muscle: 'Chest', muscleRu: 'Грудь', equipment: 'Dumbbell', icon: '💪' },
+  { id: 'e3', name: 'Pull-Ups', nameRu: 'Подтягивания', muscle: 'Back', muscleRu: 'Спина', equipment: 'Bodyweight', icon: '🤸' },
+  { id: 'e4', name: 'Deadlift', nameRu: 'Становая тяга', muscle: 'Back', muscleRu: 'Спина', equipment: 'Barbell', icon: '🏋️' },
+  { id: 'e5', name: 'Squat', nameRu: 'Приседания', muscle: 'Legs', muscleRu: 'Ноги', equipment: 'Barbell', icon: '🦵' },
+  { id: 'e6', name: 'Leg Press', nameRu: 'Жим ногами', muscle: 'Legs', muscleRu: 'Ноги', equipment: 'Machine', icon: '🦵' },
+  { id: 'e7', name: 'Overhead Press', nameRu: 'Армейский жим', muscle: 'Shoulders', muscleRu: 'Плечи', equipment: 'Barbell', icon: '💪' },
+  { id: 'e8', name: 'Lateral Raise', nameRu: 'Махи в стороны', muscle: 'Shoulders', muscleRu: 'Плечи', equipment: 'Dumbbell', icon: '💪' },
+  { id: 'e9', name: 'Bicep Curl', nameRu: 'Сгибание на бицепс', muscle: 'Arms', muscleRu: 'Руки', equipment: 'Dumbbell', icon: '💪' },
+  { id: 'e10', name: 'Tricep Pushdown', nameRu: 'Разгибания на трицепс', muscle: 'Arms', muscleRu: 'Руки', equipment: 'Cable', icon: '💪' },
+  { id: 'e11', name: 'Cable Fly', nameRu: 'Сведения в кроссовере', muscle: 'Chest', muscleRu: 'Грудь', equipment: 'Cable', icon: '🏋️' },
+  { id: 'e12', name: 'Lat Pulldown', nameRu: 'Тяга верхнего блока', muscle: 'Back', muscleRu: 'Спина', equipment: 'Cable', icon: '💪' },
+  { id: 'e13', name: 'Romanian Deadlift', nameRu: 'Румынская тяга', muscle: 'Legs', muscleRu: 'Ноги', equipment: 'Barbell', icon: '🦵' },
+  { id: 'e14', name: 'Plank', nameRu: 'Планка', muscle: 'Core', muscleRu: 'Кор', equipment: 'Bodyweight', icon: '🧘' },
+  { id: 'e15', name: 'Hanging Leg Raise', nameRu: 'Подъём ног в висе', muscle: 'Core', muscleRu: 'Кор', equipment: 'Bodyweight', icon: '🧘' },
+  { id: 'e16', name: 'Running', nameRu: 'Бег', muscle: 'Cardio', muscleRu: 'Кардио', equipment: 'Bodyweight', icon: '🏃' },
+];
+
+const MUSCLE_GROUPS = [
+  { key: 'all', en: 'All', ru: 'Все' },
+  { key: 'Chest', en: 'Chest', ru: 'Грудь' },
+  { key: 'Back', en: 'Back', ru: 'Спина' },
+  { key: 'Legs', en: 'Legs', ru: 'Ноги' },
+  { key: 'Shoulders', en: 'Shoulders', ru: 'Плечи' },
+  { key: 'Arms', en: 'Arms', ru: 'Руки' },
+  { key: 'Core', en: 'Core', ru: 'Кор' },
+  { key: 'Cardio', en: 'Cardio', ru: 'Кардио' },
+];
+
+// ── Routines
+const ROUTINES = [
+  {
+    id: 'r1', name: 'Upper body — Monday', nameRu: 'Верх тела — понедельник', sets: 28, duration: 65,
+    exercises: ['e2', 'e3', 'e11', 'e7', 'e9', 'e10'],
+    color: '#7C5CFF',
+  },
+  {
+    id: 'r2', name: 'Pull day', nameRu: 'Тяговый день', sets: 22, duration: 55,
+    exercises: ['e3', 'e4', 'e12', 'e9'],
+    color: '#00C2FF',
+  },
+  {
+    id: 'r3', name: 'Leg day crusher', nameRu: 'Убойный день ног', sets: 24, duration: 70,
+    exercises: ['e5', 'e6', 'e13'],
+    color: '#3DDC97',
+  },
+  {
+    id: 'r4', name: 'Push day', nameRu: 'Жимовой день', sets: 20, duration: 50,
+    exercises: ['e1', 'e2', 'e7', 'e10', 'e11'],
+    color: '#FFB020',
+  },
+  {
+    id: 'r5', name: 'Core finisher', nameRu: 'Финишер для кора', sets: 12, duration: 25,
+    exercises: ['e14', 'e15'],
+    color: '#FF4D6D',
+  },
+];
+
+// ── Calendar memories (workouts done by day)
+const WORKOUT_HISTORY = {
+  18: { type: 'Upper', muscles: ['chest', 'back', 'shoulders'] },
+  19: { type: 'Pull', muscles: ['back', 'arms'] },
+  20: { type: 'Legs', muscles: ['legs'] },
+  23: { type: 'Full', muscles: ['chest', 'back', 'legs'] },
+};
+
+// ── Discover users (Tinder-style cards)
+const DISCOVER_USERS = [
+  {
+    id: 'u1', name: 'Alina', age: 24, distance: 1.2,
+    bio: 'Powerlifter looking for a serious lifting partner. PRs > small talk.',
+    bioRu: 'Пауэрлифтер ищу серьёзного напарника. PR-ы важнее болтовни.',
+    goal: 'Strength', goalRu: 'Сила',
+    gym: 'PowerHouse Gym', level: 'Advanced', levelRu: 'Продвинутый',
+    schedule: 'Mon · Wed · Fri', scheduleRu: 'Пн · Ср · Пт',
+    height: 168, weight: 62,
+    interests: ['Powerlifting', 'Squat 140kg', 'Coffee'],
+    interestsRu: ['Пауэрлифтинг', 'Присед 140кг', 'Кофе'],
+    color: '#FF4D6D',
+    color2: '#7C5CFF',
+    photos: 4,
+  },
+  {
+    id: 'u2', name: 'Marcus', age: 27, distance: 2.4,
+    bio: 'Calisthenics & street workout. Park sessions every weekend.',
+    bioRu: 'Калистеника и стрит-воркаут. Каждые выходные на турниках.',
+    goal: 'Calisthenics', goalRu: 'Калистеника',
+    gym: 'Central Park', level: 'Elite', levelRu: 'Элита',
+    schedule: 'Daily', scheduleRu: 'Каждый день',
+    height: 182, weight: 78,
+    interests: ['Planche', 'Front lever', 'Vegan'],
+    interestsRu: ['Планш', 'Передний вис', 'Веган'],
+    color: '#3DDC97',
+    color2: '#00C2FF',
+    photos: 3,
+  },
+  {
+    id: 'u3', name: 'Sofia', age: 22, distance: 0.6,
+    bio: 'Yoga + functional. Looking for a balanced training partner.',
+    bioRu: 'Йога + функционалка. Ищу сбалансированного напарника.',
+    goal: 'Mobility', goalRu: 'Мобильность',
+    gym: 'Zenith Studio', level: 'Intermediate', levelRu: 'Средний',
+    schedule: 'Tue · Thu · Sat', scheduleRu: 'Вт · Чт · Сб',
+    height: 165, weight: 55,
+    interests: ['Yoga', 'Pilates', 'Plant-based'],
+    interestsRu: ['Йога', 'Пилатес', 'Растит. питание'],
+    color: '#7C5CFF',
+    color2: '#00C2FF',
+    photos: 5,
+  },
+  {
+    id: 'u4', name: 'Daniel', age: 29, distance: 3.8,
+    bio: 'Bodybuilder, prep for stage. 6×/week. Need someone to push leg day.',
+    bioRu: 'Бодибилдер, готовлюсь к сцене. 6×/нед. Нужен напарник на ноги.',
+    goal: 'Hypertrophy', goalRu: 'Гипертрофия',
+    gym: 'Iron Temple', level: 'Advanced', levelRu: 'Продвинутый',
+    schedule: '6×/week', scheduleRu: '6 раз/нед',
+    height: 178, weight: 88,
+    interests: ['Bodybuilding', 'Chicken & rice', 'Cardio hater'],
+    interestsRu: ['Бодибилдинг', 'Курица и рис', 'Ненавидит кардио'],
+    color: '#00C2FF',
+    color2: '#3DDC97',
+    photos: 4,
+  },
+  {
+    id: 'u5', name: 'Emma', age: 26, distance: 1.9,
+    bio: 'CrossFit coach. WODs at 6am, coffee at 7. Energy off the charts.',
+    bioRu: 'CrossFit-тренер. WOD-ы в 6 утра, кофе в 7. Энергия зашкаливает.',
+    goal: 'CrossFit', goalRu: 'CrossFit',
+    gym: 'BoxFit', level: 'Elite', levelRu: 'Элита',
+    schedule: '5×/week', scheduleRu: '5 раз/нед',
+    height: 170, weight: 64,
+    interests: ['Olympic lifts', 'Murph', 'Trail running'],
+    interestsRu: ['Олимпийские', 'Murph', 'Трейл'],
+    color: '#FFB020',
+    color2: '#FF4D6D',
+    photos: 3,
+  },
+];
+
+// ── Matches (already matched users for the Matches list)
+const MATCHES = [
+  { userId: 'u1', matchedAt: 'Today', matchedAtRu: 'Сегодня', online: true, unread: 2,
+    lastMsg: 'Up for legs tomorrow?', lastMsgRu: 'Завтра на ноги?' },
+  { userId: 'u3', matchedAt: 'Yesterday', matchedAtRu: 'Вчера', online: false, unread: 0,
+    lastMsg: 'See you at 7am 💪', lastMsgRu: 'Увидимся в 7 утра 💪' },
+  { userId: 'u5', matchedAt: '3d ago', matchedAtRu: '3д назад', online: true, unread: 5,
+    lastMsg: 'That Murph was brutal', lastMsgRu: 'Этот Murph был жестью' },
+];
+
+// ── Chat messages
+const CHAT_THREADS = {
+  u1: [
+    { from: 'u1', text: 'Hey! Saw your bench PR, impressive 💪', textRu: 'Привет! Видела твой PR в жиме, впечатляет 💪', time: '14:22' },
+    { from: 'me', text: 'Thanks! Your squat is insane btw', textRu: 'Спасибо! Твой присед кстати огонь', time: '14:25' },
+    { from: 'u1', text: 'Wanna train together? I do legs Mondays', textRu: 'Тренироваться вместе? Ноги по понедельникам', time: '14:26' },
+    { from: 'me', text: "Let's do it. PowerHouse?", textRu: 'Давай. PowerHouse?', time: '14:30' },
+    { from: 'u1', text: 'Up for legs tomorrow?', textRu: 'Завтра на ноги?', time: '18:11' },
+  ],
+  u3: [
+    { from: 'u3', text: 'Hi! Yoga class at 7am tomorrow?', textRu: 'Привет! Йога завтра в 7?', time: '09:15' },
+    { from: 'me', text: 'Count me in', textRu: 'Я в деле', time: '09:20' },
+    { from: 'u3', text: 'See you at 7am 💪', textRu: 'Увидимся в 7 утра 💪', time: '09:21' },
+  ],
+  u5: [
+    { from: 'u5', text: 'Murph today??', textRu: 'Murph сегодня??', time: '06:00' },
+    { from: 'me', text: 'Are you insane', textRu: 'Ты с ума сошла', time: '06:01' },
+    { from: 'u5', text: 'Yes 😈', textRu: 'Да 😈', time: '06:02' },
+    { from: 'u5', text: 'That Murph was brutal', textRu: 'Этот Murph был жестью', time: '10:30' },
+  ],
+};
+
+// ── Friends (separate from matches; social, not dating)
+const FRIENDS = [
+  { id: 'f1', name: 'Jake T.', level: 64, streak: 88, online: true, color: '#FF4D6D', last: 'Bench day' },
+  { id: 'f2', name: 'Lena K.', level: 92, streak: 210, online: true, color: '#00C2FF', last: 'PR squat 130kg' },
+  { id: 'f3', name: 'Max R.', level: 41, streak: 12, online: false, color: '#7C5CFF', last: '5km run' },
+  { id: 'f4', name: 'Yuki S.', level: 73, streak: 56, online: false, color: '#3DDC97', last: 'Full body' },
+  { id: 'f5', name: 'Carlos P.', level: 105, streak: 320, online: true, color: '#FFB020', last: 'Hit goal weight' },
+];
+
+// ── Leaderboard
+const LEADERBOARD = [
+  { rank: 1, name: 'Carlos P.', xp: 184220, color: '#FFD700' },
+  { rank: 2, name: 'Lena K.', xp: 172110, color: '#C0C0C0' },
+  { rank: 3, name: 'You', xp: 158913, color: '#CD7F32', isMe: true },
+  { rank: 4, name: 'Yuki S.', xp: 141500, color: '#7C5CFF' },
+  { rank: 5, name: 'Jake T.', xp: 128340, color: '#00C2FF' },
+  { rank: 6, name: 'Marcus L.', xp: 119800, color: '#3DDC97' },
+  { rank: 7, name: 'Anya B.', xp: 102450, color: '#FF4D6D' },
+];
+
+// ── Medals
+const MEDALS = [
+  { id: 'm1', icon: '🔥', name: '100-day streak', nameRu: 'Стрик 100 дней', unlocked: true },
+  { id: 'm2', icon: '💪', name: 'First 100kg bench', nameRu: 'Первые 100кг в жиме', unlocked: true },
+  { id: 'm3', icon: '🏆', name: 'Top 10 weekly', nameRu: 'Топ-10 недели', unlocked: true },
+  { id: 'm4', icon: '🦵', name: 'Squat 2× bodyweight', nameRu: 'Присед 2× веса', unlocked: false },
+  { id: 'm5', icon: '⚡', name: '1000 sets logged', nameRu: '1000 подходов', unlocked: true },
+  { id: 'm6', icon: '🌟', name: 'Level 100', nameRu: 'Уровень 100', unlocked: false },
+];
+
+// ── Quests
+const QUESTS = [
+  { id: 'q1', text: 'Train 3 times this week', textRu: 'Тренируйся 3 раза на неделе', progress: 2, total: 3, xp: 250 },
+  { id: 'q2', text: 'Log 12 sets today', textRu: 'Запиши 12 подходов сегодня', progress: 8, total: 12, xp: 80 },
+  { id: 'q3', text: 'Try a new exercise', textRu: 'Попробуй новое упражнение', progress: 0, total: 1, xp: 100 },
+];
+
+// ── Streak (last 7 days, 1 = trained, 0.5 = partial, 0 = missed)
+const STREAK_WEEK = [1, 1, 1, 1, 0.3, 1, 1];
+
+// ── Me (user profile)
+const ME = {
+  name: 'Alex',
+  username: '@alex_lifts',
+  age: 28,
+  height: 181,
+  weight: 82,
+  level: 79,
+  xp: 3854,
+  xpToNext: 5213,
+  totalXp: 158913,
+  streak: 125,
+  bestStreak: 125,
+  coins: 3099,
+  bio: 'Powerbuilder. Coffee fueled. Always down for legs.',
+  bioRu: 'Пауэрбилдер. На кофе. Всегда за день ног.',
+  goal: 'Hypertrophy', goalRu: 'Гипертрофия',
+  workoutsThisWeek: 4,
+  totalWorkouts: 412,
+};
+
+window.EXERCISE_LIB = EXERCISE_LIB;
+window.MUSCLE_GROUPS = MUSCLE_GROUPS;
+window.ROUTINES = ROUTINES;
+window.WORKOUT_HISTORY = WORKOUT_HISTORY;
+window.DISCOVER_USERS = DISCOVER_USERS;
+window.MATCHES = MATCHES;
+window.CHAT_THREADS = CHAT_THREADS;
+window.FRIENDS = FRIENDS;
+window.LEADERBOARD = LEADERBOARD;
+window.MEDALS = MEDALS;
+window.QUESTS = QUESTS;
+window.STREAK_WEEK = STREAK_WEEK;
+window.ME = ME;
+
+// ═══ ui.jsx ═══
+// ui.jsx — shared UI primitives
+
+// ── Icon system (custom SVG, NOT emoji — clean line icons)
+function Icon({ name, size = 22, color = 'currentColor', strokeWidth = 2 }) {
+  const s = { width: size, height: size, display: 'block' };
+  const sp = { fill: 'none', stroke: color, strokeWidth, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  switch (name) {
+    case 'home': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M3 11l9-8 9 8v10a1 1 0 01-1 1h-5v-7H9v7H4a1 1 0 01-1-1V11z"/></svg>);
+    case 'dumbbell': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M6.5 6.5l-2 2m13 9l-2 2M2 13l2-2m11 11l2-2M14.5 4.5L19.5 9.5l-10 10L4.5 14.5z"/><path {...sp} d="M6 6l4 4M14 14l4 4"/></svg>);
+    case 'flame': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M12 2c1 4 5 5 5 10a5 5 0 11-10 0c0-2 1-3 1-5 2 1 3 0 4-5z"/></svg>);
+    case 'spark': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6z"/></svg>);
+    case 'heart': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M20.8 6.6a5.5 5.5 0 00-9.3-2.5l-.5.5-.5-.5A5.5 5.5 0 002.2 9.5C2.2 14 7 17.5 12 21c5-3.5 9.8-7 9.8-11.5 0-1-.3-2-1-2.9z"/></svg>);
+    case 'heart-fill': return (<svg style={s} viewBox="0 0 24 24" fill={color}><path d="M20.8 6.6a5.5 5.5 0 00-9.3-2.5l-.5.5-.5-.5A5.5 5.5 0 002.2 9.5C2.2 14 7 17.5 12 21c5-3.5 9.8-7 9.8-11.5 0-1-.3-2-1-2.9z"/></svg>);
+    case 'user': return (<svg style={s} viewBox="0 0 24 24"><circle {...sp} cx="12" cy="8" r="4"/><path {...sp} d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>);
+    case 'users': return (<svg style={s} viewBox="0 0 24 24"><circle {...sp} cx="9" cy="8" r="3.5"/><circle {...sp} cx="17" cy="9" r="2.5"/><path {...sp} d="M3 19c0-3.3 2.7-5 6-5s6 1.7 6 5M15 19c0-2 1.5-3.5 4-3.5s4 1.5 4 3.5"/></svg>);
+    case 'cog': return (<svg style={s} viewBox="0 0 24 24"><circle {...sp} cx="12" cy="12" r="3"/><path {...sp} d="M19.4 15a1.7 1.7 0 00.4 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.4 1.7 1.7 0 00-1 1.6V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.9.4l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.4-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.4-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.4H9a1.7 1.7 0 001-1.5V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.4l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.4 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>);
+    case 'plus': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M12 5v14M5 12h14"/></svg>);
+    case 'check': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M5 12l5 5L20 7"/></svg>);
+    case 'close': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M6 6l12 12M18 6L6 18"/></svg>);
+    case 'chevron-right': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M9 6l6 6-6 6"/></svg>);
+    case 'chevron-left': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M15 6l-6 6 6 6"/></svg>);
+    case 'chevron-down': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M6 9l6 6 6-6"/></svg>);
+    case 'arrow-right': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M5 12h14M13 6l6 6-6 6"/></svg>);
+    case 'arrow-left': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M19 12H5M11 6l-6 6 6 6"/></svg>);
+    case 'search': return (<svg style={s} viewBox="0 0 24 24"><circle {...sp} cx="11" cy="11" r="7"/><path {...sp} d="M21 21l-4.3-4.3"/></svg>);
+    case 'calendar': return (<svg style={s} viewBox="0 0 24 24"><rect {...sp} x="3" y="5" width="18" height="16" rx="2"/><path {...sp} d="M3 10h18M8 3v4M16 3v4"/></svg>);
+    case 'bell': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M6 8a6 6 0 1112 0c0 7 3 8 3 9H3c0-1 3-2 3-9z"/><path {...sp} d="M10 21a2 2 0 004 0"/></svg>);
+    case 'filter': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M3 5h18l-7 9v6l-4-2v-4z"/></svg>);
+    case 'bolt': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>);
+    case 'rewind': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M3 12a9 9 0 1015-6.7"/><path {...sp} d="M3 4v6h6"/></svg>);
+    case 'star': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M12 2l3.1 6.4 7 1-5 4.9 1.2 7L12 18l-6.3 3.3 1.2-7-5-4.9 7-1z"/></svg>);
+    case 'send': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>);
+    case 'apple': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M12 6c0-2 1-3 3-3M8 10c-3 0-5 2-5 6 0 4 3 8 5 8 1 0 2-1 4-1s3 1 4 1c2 0 5-4 5-8 0-4-2-6-5-6-2 0-3 1-4 1s-2-1-4-1z"/></svg>);
+    case 'medal': return (<svg style={s} viewBox="0 0 24 24"><circle {...sp} cx="12" cy="15" r="6"/><path {...sp} d="M8 3l4 8 4-8M9 3h6"/></svg>);
+    case 'trophy': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M8 4h8v6a4 4 0 01-8 0V4zM6 4H4v3a3 3 0 003 3M18 4h2v3a3 3 0 01-3 3M10 18h4l-1 3h-2z"/></svg>);
+    case 'chart': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M3 20h18M6 16v-4M11 16V8M16 16v-6M21 16v-2"/></svg>);
+    case 'play': return (<svg style={s} viewBox="0 0 24 24" fill={color}><path d="M7 4l14 8-14 8V4z"/></svg>);
+    case 'pause': return (<svg style={s} viewBox="0 0 24 24" fill={color}><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>);
+    case 'image': return (<svg style={s} viewBox="0 0 24 24"><rect {...sp} x="3" y="5" width="18" height="14" rx="2"/><circle {...sp} cx="9" cy="11" r="2"/><path {...sp} d="M21 17l-5-5-9 7"/></svg>);
+    case 'camera': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle {...sp} cx="12" cy="13" r="4"/></svg>);
+    case 'edit': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M4 20h4L20 8l-4-4L4 16zM14 6l4 4"/></svg>);
+    case 'language': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M3 6h12M9 3v3c0 6-3 11-7 12M13 6c0 6 3 11 7 12M14 18h7M17 14l3 8M20 14l-3 8"/></svg>);
+    case 'moon': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M21 13A9 9 0 1111 3a7 7 0 0010 10z"/></svg>);
+    case 'sun': return (<svg style={s} viewBox="0 0 24 24"><circle {...sp} cx="12" cy="12" r="4"/><path {...sp} d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>);
+    case 'location': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M12 22s8-7 8-13a8 8 0 10-16 0c0 6 8 13 8 13z"/><circle {...sp} cx="12" cy="9" r="3"/></svg>);
+    case 'clock': return (<svg style={s} viewBox="0 0 24 24"><circle {...sp} cx="12" cy="12" r="9"/><path {...sp} d="M12 7v5l3 2"/></svg>);
+    case 'list': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>);
+    case 'grid': return (<svg style={s} viewBox="0 0 24 24"><rect {...sp} x="3" y="3" width="7" height="7" rx="1"/><rect {...sp} x="14" y="3" width="7" height="7" rx="1"/><rect {...sp} x="3" y="14" width="7" height="7" rx="1"/><rect {...sp} x="14" y="14" width="7" height="7" rx="1"/></svg>);
+    case 'more': return (<svg style={s} viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill={color}/><circle cx="12" cy="12" r="1.5" fill={color}/><circle cx="19" cy="12" r="1.5" fill={color}/></svg>);
+    case 'globe': return (<svg style={s} viewBox="0 0 24 24"><circle {...sp} cx="12" cy="12" r="9"/><path {...sp} d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>);
+    case 'sliders': return (<svg style={s} viewBox="0 0 24 24"><path {...sp} d="M4 6h12M4 12h6M4 18h14M18 6h2M14 12h6M20 18h0"/><circle {...sp} cx="17" cy="6" r="2"/><circle {...sp} cx="12" cy="12" r="2"/><circle {...sp} cx="7" cy="18" r="2"/></svg>);
+    default: return null;
+  }
+}
+
+// ── Avatar with gradient initial fallback
+function Avatar({ name, size = 40, color = '#7C5CFF', color2 = '#00C2FF', ring = false, ringColor }) {
+  const initial = (name || '?').charAt(0).toUpperCase();
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: size / 2,
+      background: `linear-gradient(135deg, ${color}, ${color2})`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: '#fff', fontWeight: 700, fontSize: size * 0.42,
+      flexShrink: 0, position: 'relative',
+      boxShadow: ring ? `0 0 0 2px ${ringColor || '#fff'}, 0 0 0 4px ${color}` : undefined,
+    }}>{initial}</div>
+  );
+}
+
+// ── Photo placeholder (subtly striped, monospace label)
+function PhotoSlot({ color = '#7C5CFF', color2 = '#00C2FF', label, style }) {
+  return (
+    <div style={{
+      background: `linear-gradient(135deg, ${color} 0%, ${color2} 100%)`,
+      position: 'relative', overflow: 'hidden',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start',
+      ...style,
+    }}>
+      {/* Stripe pattern */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,0.06) 14px 28px)',
+      }} />
+      {/* Soft vignette */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'radial-gradient(60% 60% at 50% 30%, rgba(255,255,255,0.18), transparent 70%)',
+      }} />
+      {label && (
+        <div style={{
+          position: 'relative', padding: '6px 10px', margin: 10,
+          background: 'rgba(0,0,0,0.35)', borderRadius: 6,
+          color: 'rgba(255,255,255,0.85)', fontSize: 10, fontFamily: 'ui-monospace, "SF Mono", monospace',
+          letterSpacing: 0.3,
+        }}>{label}</div>
+      )}
+    </div>
+  );
+}
+
+// ── Card surface
+function Card({ children, style, padding = 16, onClick, theme }) {
+  const t = theme || useTheme();
+  return (
+    <div onClick={onClick} style={{
+      background: t.surface,
+      border: `1px solid ${t.border}`,
+      borderRadius: 18,
+      padding,
+      cursor: onClick ? 'pointer' : 'default',
+      transition: 'transform .12s ease',
+      ...style,
+    }}>{children}</div>
+  );
+}
+
+// ── Pill button
+function Pill({ children, active, color, onClick, style }) {
+  const t = useTheme();
+  return (
+    <button onClick={onClick} style={{
+      border: 'none', cursor: 'pointer',
+      padding: '8px 14px', borderRadius: 999,
+      background: active ? (color || t.p2) : t.chip,
+      color: active ? '#fff' : t.textMuted,
+      fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+      transition: 'all .15s', whiteSpace: 'nowrap',
+      ...style,
+    }}>{children}</button>
+  );
+}
+
+// ── Primary gradient button
+function GradButton({ children, onClick, style, icon, grad }) {
+  const t = useTheme();
+  return (
+    <button onClick={onClick} style={{
+      border: 'none', cursor: 'pointer',
+      padding: '14px 18px', borderRadius: 14,
+      background: grad || t.grad,
+      color: '#fff', fontWeight: 700, fontSize: 15, fontFamily: 'inherit',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+      boxShadow: '0 8px 24px rgba(0,194,255,0.25)',
+      ...style,
+    }}>
+      {icon && <Icon name={icon} size={18}/>}
+      {children}
+    </button>
+  );
+}
+
+// ── Stat tile
+function StatTile({ value, label, icon, color, style }) {
+  const t = useTheme();
+  return (
+    <div style={{
+      flex: 1, background: t.surface, border: `1px solid ${t.border}`,
+      borderRadius: 14, padding: '12px 14px', minWidth: 0, ...style,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+        {icon && <div style={{ color: color || t.p2 }}><Icon name={icon} size={14}/></div>}
+        <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600, letterSpacing: 0.3, textTransform: 'uppercase' }}>{label}</div>
+      </div>
+      <div style={{ fontSize: 22, fontWeight: 800, color: t.text, lineHeight: 1 }}>{value}</div>
+    </div>
+  );
+}
+
+// ── Top header (used on every screen)
+function ScreenHeader({ title, left, right, theme, large = false }) {
+  const t = theme || useTheme();
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: large ? '4px 18px 12px' : '4px 18px 10px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 32 }}>{left}</div>
+      <div style={{
+        fontSize: large ? 22 : 17, fontWeight: 700, color: t.text,
+        flex: 1, textAlign: large ? 'left' : 'center', marginLeft: large ? 0 : 0,
+      }}>{title}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 32, justifyContent: 'flex-end' }}>{right}</div>
+    </div>
+  );
+}
+
+// ── Icon button
+function IconBtn({ name, onClick, size = 36, iconSize = 20, color, bg, badge }) {
+  const t = useTheme();
+  return (
+    <button onClick={onClick} style={{
+      width: size, height: size, borderRadius: size / 2,
+      border: 'none', background: bg || t.chip, color: color || t.text,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      cursor: 'pointer', position: 'relative', flexShrink: 0,
+    }}>
+      <Icon name={name} size={iconSize}/>
+      {badge != null && (
+        <div style={{
+          position: 'absolute', top: -2, right: -2,
+          minWidth: 18, height: 18, padding: '0 4px', borderRadius: 9,
+          background: t.danger, color: '#fff', fontSize: 10, fontWeight: 700,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          border: `2px solid ${t.surface}`,
+        }}>{badge}</div>
+      )}
+    </button>
+  );
+}
+
+// ── Bottom navigation
+function BottomNav({ tab, onTab, theme, mode = 'ios' }) {
+  const t = theme || useTheme();
+  const { t: tr } = useI18n();
+  const tabs = [
+    { key: 'home', label: tr('home'), icon: 'home' },
+    { key: 'workout', label: tr('workout'), icon: 'dumbbell' },
+    { key: 'discover', label: tr('discover'), icon: 'heart' },
+    { key: 'friends', label: tr('friends'), icon: 'users' },
+    { key: 'profile', label: tr('profile'), icon: 'user' },
+  ];
+  return (
+    <div style={{
+      display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end',
+      background: t.surface,
+      borderTop: `1px solid ${t.border}`,
+      paddingTop: 8, paddingBottom: mode === 'ios' ? 26 : 14,
+      paddingLeft: 6, paddingRight: 6,
+      flexShrink: 0,
+    }}>
+      {tabs.map(x => {
+        const active = tab === x.key;
+        return (
+          <button key={x.key} onClick={() => onTab(x.key)} style={{
+            border: 'none', background: 'transparent', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+            padding: '4px 6px', minWidth: 56, fontFamily: 'inherit',
+          }}>
+            <div style={{
+              width: 44, height: 28, borderRadius: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: active ? t.gradSoft : 'transparent',
+              color: active ? t.p2 : t.textDim, transition: 'all .2s',
+              position: 'relative',
+            }}>
+              {x.key === 'discover' && active
+                ? <Icon name="heart-fill" size={22} color={t.p2}/>
+                : <Icon name={x.icon} size={22}/>}
+            </div>
+            <div style={{
+              fontSize: 10, fontWeight: 600,
+              color: active ? t.p2 : t.textDim,
+            }}>{x.label}</div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Section header
+function SectionHeader({ title, action, onAction, theme }) {
+  const t = theme || useTheme();
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+      padding: '0 18px', marginBottom: 10, marginTop: 18,
+    }}>
+      <div style={{ fontSize: 17, fontWeight: 700, color: t.text }}>{title}</div>
+      {action && (
+        <button onClick={onAction} style={{
+          border: 'none', background: 'transparent', cursor: 'pointer',
+          color: t.p2, fontSize: 13, fontWeight: 600, padding: 0, fontFamily: 'inherit',
+        }}>{action}</button>
+      )}
+    </div>
+  );
+}
+
+// ── Progress bar
+function ProgressBar({ value, max = 100, color, height = 8, style }) {
+  const t = useTheme();
+  const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  return (
+    <div style={{
+      width: '100%', height, background: t.chip, borderRadius: height / 2,
+      overflow: 'hidden', ...style,
+    }}>
+      <div style={{
+        width: `${pct}%`, height: '100%',
+        background: color || t.grad, borderRadius: height / 2,
+        transition: 'width .3s ease',
+      }}/>
+    </div>
+  );
+}
+
+// ── Switch
+function Switch({ value, onChange, color }) {
+  const t = useTheme();
+  return (
+    <button onClick={() => onChange(!value)} style={{
+      width: 48, height: 28, borderRadius: 14, padding: 2,
+      background: value ? (color || t.p2) : t.chip,
+      border: 'none', cursor: 'pointer', transition: 'background .2s',
+      display: 'flex', alignItems: 'center', justifyContent: value ? 'flex-end' : 'flex-start',
+    }}>
+      <div style={{
+        width: 24, height: 24, borderRadius: 12, background: '#fff',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)', transition: 'transform .2s',
+      }}/>
+    </button>
+  );
+}
+
+Object.assign(window, { Icon, Avatar, PhotoSlot, Card, Pill, GradButton, StatTile, ScreenHeader, IconBtn, BottomNav, SectionHeader, ProgressBar, Switch });
+
+// ═══ tweaks-panel.jsx ═══
+
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "palette": ["#D97757", "#29261b", "#f6f4ef"],
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        options={['#D97757', '#2A6FDB', '#1F8A5B', '#7A5AE0']}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakColor  label="Palette" value={t.palette}
+//                        options={[['#D97757', '#29261b', '#f6f4ef'],
+//                                  ['#475569', '#0f172a', '#f1f5f9']]}
+//                        onChange={(v) => setTweak('palette', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;box-sizing:border-box;min-width:0;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+    transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+  .twk-chip:hover{transform:translateY(-1px);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1;box-shadow:0 -1px 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i:first-child{box-shadow:none}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    // Same-window signal so in-page listeners (deck-stage rail thumbnails)
+    // can react — the parent message only reaches the host, not peers.
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-omelette-chrome=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  // Segments wrap mid-word once per-segment width runs out. The track is
+  // ~248px (280 panel − 28 body pad − 4 seg pad), each button loses 12px
+  // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
+  // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
+  // back to a dropdown rather than wrap.
+  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
+  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  if (!fitsAsSegments) {
+    // <select> emits strings — map back to the original option value so the
+    // fallback stays type-preserving (numbers, booleans) like the segment path.
+    const resolve = (s) => {
+      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+      return m === undefined ? s : typeof m === 'object' ? m.value : m;
+    };
+    return <TweakSelect label={label} value={value} options={options}
+                        onChange={(s) => onChange(resolve(s))} />;
+  }
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+// Relative-luminance contrast pick — checkmarks drawn over a swatch need to
+// read on both #111 and #fafafa without per-option configuration. Hex input
+// only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+// TweakColor — curated color/palette picker. Each option is either a single
+// hex string or an array of 1-5 hex strings; the card adapts — a lone color
+// renders solid, a palette renders colors[0] as the hero (left ~2/3) with the
+// rest stacked in a sharp column on the right. onChange emits the
+// option in the shape it was passed (string stays string, array stays array).
+// Without options it falls back to the native color input for back-compat.
+function TweakColor({ label, value, options, onChange }) {
+  if (!options || !options.length) {
+    return (
+      <div className="twk-row twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <input type="color" className="twk-swatch" value={value}
+               onChange={(e) => onChange(e.target.value)} />
+      </div>
+    );
+  }
+  // Native <input type=color> emits lowercase hex per the HTML spec, so
+  // compare case-insensitively. String() guards JSON.stringify(undefined),
+  // which returns the primitive undefined (no .toLowerCase).
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const colors = Array.isArray(o) ? o : [o];
+          const [hero, ...rest] = colors;
+          const sup = rest.slice(0, 4);
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    aria-label={colors.join(', ')} title={colors.join(' · ')}
+                    style={{ background: hero }}
+                    onClick={() => onChange(o)}>
+              {sup.length > 0 && (
+                <span>
+                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
+                </span>
+              )}
+              {on && <__TwkCheck light={__twkIsLight(hero)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+Object.assign(window, {
+  useTweaks, TweaksPanel, TweakSection, TweakRow,
+  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
+  TweakText, TweakNumber, TweakColor, TweakButton,
+});
+
+// ═══ ios-frame.jsx ═══
+
+// iOS.jsx — Simplified iOS 26 (Liquid Glass) device frame
+// Based on the iOS 26 UI Kit + Figma status bar spec. No assets, no deps.
+// Exports: IOSDevice, IOSStatusBar, IOSNavBar, IOSGlassPill, IOSList, IOSListRow, IOSKeyboard
+
+// ─────────────────────────────────────────────────────────────
+// Status bar
+// ─────────────────────────────────────────────────────────────
+function IOSStatusBar({ dark = false, time = '9:41' }) {
+  const c = dark ? '#fff' : '#000';
+  return (
+    <div style={{
+      display: 'flex', gap: 154, alignItems: 'center', justifyContent: 'center',
+      padding: '21px 24px 19px', boxSizing: 'border-box',
+      position: 'relative', zIndex: 20, width: '100%',
+    }}>
+      <div style={{ flex: 1, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 1.5 }}>
+        <span style={{
+          fontFamily: '-apple-system, "SF Pro", system-ui', fontWeight: 590,
+          fontSize: 17, lineHeight: '22px', color: c,
+        }}>{time}</span>
+      </div>
+      <div style={{ flex: 1, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, paddingTop: 1, paddingRight: 1 }}>
+        <svg width="19" height="12" viewBox="0 0 19 12">
+          <rect x="0" y="7.5" width="3.2" height="4.5" rx="0.7" fill={c}/>
+          <rect x="4.8" y="5" width="3.2" height="7" rx="0.7" fill={c}/>
+          <rect x="9.6" y="2.5" width="3.2" height="9.5" rx="0.7" fill={c}/>
+          <rect x="14.4" y="0" width="3.2" height="12" rx="0.7" fill={c}/>
+        </svg>
+        <svg width="17" height="12" viewBox="0 0 17 12">
+          <path d="M8.5 3.2C10.8 3.2 12.9 4.1 14.4 5.6L15.5 4.5C13.7 2.7 11.2 1.5 8.5 1.5C5.8 1.5 3.3 2.7 1.5 4.5L2.6 5.6C4.1 4.1 6.2 3.2 8.5 3.2Z" fill={c}/>
+          <path d="M8.5 6.8C9.9 6.8 11.1 7.3 12 8.2L13.1 7.1C11.8 5.9 10.2 5.1 8.5 5.1C6.8 5.1 5.2 5.9 3.9 7.1L5 8.2C5.9 7.3 7.1 6.8 8.5 6.8Z" fill={c}/>
+          <circle cx="8.5" cy="10.5" r="1.5" fill={c}/>
+        </svg>
+        <svg width="27" height="13" viewBox="0 0 27 13">
+          <rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke={c} strokeOpacity="0.35" fill="none"/>
+          <rect x="2" y="2" width="20" height="9" rx="2" fill={c}/>
+          <path d="M25 4.5V8.5C25.8 8.2 26.5 7.2 26.5 6.5C26.5 5.8 25.8 4.8 25 4.5Z" fill={c} fillOpacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Liquid glass pill — blur + tint + shine
+// ─────────────────────────────────────────────────────────────
+function IOSGlassPill({ children, dark = false, style = {} }) {
+  return (
+    <div style={{
+      height: 44, minWidth: 44, borderRadius: 9999,
+      position: 'relative', overflow: 'hidden',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: dark
+        ? '0 2px 6px rgba(0,0,0,0.35), 0 6px 16px rgba(0,0,0,0.2)'
+        : '0 1px 3px rgba(0,0,0,0.07), 0 3px 10px rgba(0,0,0,0.06)',
+      ...style,
+    }}>
+      {/* blur + tint */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 9999,
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        background: dark ? 'rgba(120,120,128,0.28)' : 'rgba(255,255,255,0.5)',
+      }} />
+      {/* shine */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 9999,
+        boxShadow: dark
+          ? 'inset 1.5px 1.5px 1px rgba(255,255,255,0.15), inset -1px -1px 1px rgba(255,255,255,0.08)'
+          : 'inset 1.5px 1.5px 1px rgba(255,255,255,0.7), inset -1px -1px 1px rgba(255,255,255,0.4)',
+        border: dark ? '0.5px solid rgba(255,255,255,0.15)' : '0.5px solid rgba(0,0,0,0.06)',
+      }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Navigation bar — glass pills + large title
+// ─────────────────────────────────────────────────────────────
+function IOSNavBar({ title = 'Title', dark = false, trailingIcon = true }) {
+  const muted = dark ? 'rgba(255,255,255,0.6)' : '#404040';
+  const text = dark ? '#fff' : '#000';
+  const pillIcon = (content) => (
+    <IOSGlassPill dark={dark}>
+      <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {content}
+      </div>
+    </IOSGlassPill>
+  );
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: 10,
+      paddingTop: 62, paddingBottom: 10, position: 'relative', zIndex: 5,
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 16px',
+      }}>
+        {/* back chevron */}
+        {pillIcon(
+          <svg width="12" height="20" viewBox="0 0 12 20" fill="none" style={{ marginLeft: -1 }}>
+            <path d="M10 2L2 10l8 8" stroke={muted} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+        {/* trailing ellipsis */}
+        {trailingIcon && pillIcon(
+          <svg width="22" height="6" viewBox="0 0 22 6">
+            <circle cx="3" cy="3" r="2.5" fill={muted}/>
+            <circle cx="11" cy="3" r="2.5" fill={muted}/>
+            <circle cx="19" cy="3" r="2.5" fill={muted}/>
+          </svg>
+        )}
+      </div>
+      {/* large title */}
+      <div style={{
+        padding: '0 16px',
+        fontFamily: '-apple-system, system-ui',
+        fontSize: 34, fontWeight: 700, lineHeight: '41px',
+        color: text, letterSpacing: 0.4,
+      }}>{title}</div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Grouped list (inset card, r:26) + row (52px)
+// ─────────────────────────────────────────────────────────────
+function IOSListRow({ title, detail, icon, chevron = true, isLast = false, dark = false }) {
+  const text = dark ? '#fff' : '#000';
+  const sec = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)';
+  const ter = dark ? 'rgba(235,235,245,0.3)' : 'rgba(60,60,67,0.3)';
+  const sep = dark ? 'rgba(84,84,88,0.65)' : 'rgba(60,60,67,0.12)';
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', minHeight: 52,
+      padding: '0 16px', position: 'relative',
+      fontFamily: '-apple-system, system-ui', fontSize: 17,
+      letterSpacing: -0.43,
+    }}>
+      {icon && (
+        <div style={{
+          width: 30, height: 30, borderRadius: 7, background: icon,
+          marginRight: 12, flexShrink: 0,
+        }} />
+      )}
+      <div style={{ flex: 1, color: text }}>{title}</div>
+      {detail && <span style={{ color: sec, marginRight: 6 }}>{detail}</span>}
+      {chevron && (
+        <svg width="8" height="14" viewBox="0 0 8 14" style={{ flexShrink: 0 }}>
+          <path d="M1 1l6 6-6 6" stroke={ter} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
+      {!isLast && (
+        <div style={{
+          position: 'absolute', bottom: 0, right: 0,
+          left: icon ? 58 : 16, height: 0.5, background: sep,
+        }} />
+      )}
+    </div>
+  );
+}
+
+function IOSList({ header, children, dark = false }) {
+  const hc = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)';
+  const bg = dark ? '#1C1C1E' : '#fff';
+  return (
+    <div>
+      {header && (
+        <div style={{
+          fontFamily: '-apple-system, system-ui', fontSize: 13,
+          color: hc, textTransform: 'uppercase',
+          padding: '8px 36px 6px', letterSpacing: -0.08,
+        }}>{header}</div>
+      )}
+      <div style={{
+        background: bg, borderRadius: 26,
+        margin: '0 16px', overflow: 'hidden',
+      }}>{children}</div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Device frame
+// ─────────────────────────────────────────────────────────────
+function IOSDevice({
+  children, width = 402, height = 874, dark = false,
+  title, keyboard = false,
+}) {
+  return (
+    <div style={{
+      width, height, borderRadius: 48, overflow: 'hidden',
+      position: 'relative', background: dark ? '#000' : '#F2F2F7',
+      boxShadow: '0 40px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.12)',
+      fontFamily: '-apple-system, system-ui, sans-serif',
+      WebkitFontSmoothing: 'antialiased',
+    }}>
+      {/* dynamic island */}
+      <div style={{
+        position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)',
+        width: 126, height: 37, borderRadius: 24, background: '#000', zIndex: 50,
+      }} />
+      {/* status bar (absolute) */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
+        <IOSStatusBar dark={dark} />
+      </div>
+      {/* nav + content */}
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {title !== undefined && <IOSNavBar title={title} dark={dark} />}
+        <div style={{ flex: 1, overflow: 'auto' }}>{children}</div>
+        {keyboard && <IOSKeyboard dark={dark} />}
+      </div>
+      {/* home indicator — always on top */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 60,
+        height: 34, display: 'flex', justifyContent: 'center', alignItems: 'flex-end',
+        paddingBottom: 8, pointerEvents: 'none',
+      }}>
+        <div style={{
+          width: 139, height: 5, borderRadius: 100,
+          background: dark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.25)',
+        }} />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Keyboard — iOS 26 liquid glass
+// ─────────────────────────────────────────────────────────────
+function IOSKeyboard({ dark = false }) {
+  const glyph = dark ? 'rgba(255,255,255,0.7)' : '#595959';
+  const sugg = dark ? 'rgba(255,255,255,0.6)' : '#333';
+  const keyBg = dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.85)';
+
+  // special-key icons
+  const icons = {
+    shift: <svg width="19" height="17" viewBox="0 0 19 17"><path d="M9.5 1L1 9.5h4.5V16h8V9.5H18L9.5 1z" fill={glyph}/></svg>,
+    del: <svg width="23" height="17" viewBox="0 0 23 17"><path d="M7 1h13a2 2 0 012 2v11a2 2 0 01-2 2H7l-6-7.5L7 1z" fill="none" stroke={glyph} strokeWidth="1.6" strokeLinejoin="round"/><path d="M10 5l7 7M17 5l-7 7" stroke={glyph} strokeWidth="1.6" strokeLinecap="round"/></svg>,
+    ret: <svg width="20" height="14" viewBox="0 0 20 14"><path d="M18 1v6H4m0 0l4-4M4 7l4 4" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  };
+
+  const key = (content, { w, flex, ret, fs = 25, k } = {}) => (
+    <div key={k} style={{
+      height: 42, borderRadius: 8.5,
+      flex: flex ? 1 : undefined, width: w, minWidth: 0,
+      background: ret ? '#08f' : keyBg,
+      boxShadow: '0 1px 0 rgba(0,0,0,0.075)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: '-apple-system, "SF Compact", system-ui',
+      fontSize: fs, fontWeight: 458, color: ret ? '#fff' : glyph,
+    }}>{content}</div>
+  );
+
+  const row = (keys, pad = 0) => (
+    <div style={{ display: 'flex', gap: 6.5, justifyContent: 'center', padding: `0 ${pad}px` }}>
+      {keys.map(l => key(l, { flex: true, k: l }))}
+    </div>
+  );
+
+  return (
+    <div style={{
+      position: 'relative', zIndex: 15, borderRadius: 27, overflow: 'hidden',
+      padding: '11px 0 2px',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      boxShadow: dark
+        ? '0 -2px 20px rgba(0,0,0,0.09)'
+        : '0 -1px 6px rgba(0,0,0,0.018), 0 -3px 20px rgba(0,0,0,0.012)',
+    }}>
+      {/* liquid glass bg — same recipe as nav pills */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 27,
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        background: dark ? 'rgba(120,120,128,0.14)' : 'rgba(255,255,255,0.25)',
+      }} />
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 27,
+        boxShadow: dark
+          ? 'inset 1.5px 1.5px 1px rgba(255,255,255,0.15)'
+          : 'inset 1.5px 1.5px 1px rgba(255,255,255,0.7), inset -1px -1px 1px rgba(255,255,255,0.4)',
+        border: dark ? '0.5px solid rgba(255,255,255,0.15)' : '0.5px solid rgba(0,0,0,0.06)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* autocorrect bar */}
+      <div style={{
+        display: 'flex', gap: 20, alignItems: 'center',
+        padding: '8px 22px 13px', width: '100%', boxSizing: 'border-box',
+        position: 'relative',
+      }}>
+        {['"The"', 'the', 'to'].map((w, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <div style={{ width: 1, height: 25, background: '#ccc', opacity: 0.3 }} />}
+            <div style={{
+              flex: 1, textAlign: 'center',
+              fontFamily: '-apple-system, system-ui', fontSize: 17,
+              color: sugg, letterSpacing: -0.43, lineHeight: '22px',
+            }}>{w}</div>
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* key layout */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 13,
+        padding: '0 6.5px', width: '100%', boxSizing: 'border-box',
+        position: 'relative',
+      }}>
+        {row(['q','w','e','r','t','y','u','i','o','p'])}
+        {row(['a','s','d','f','g','h','j','k','l'], 20)}
+        <div style={{ display: 'flex', gap: 14.25, alignItems: 'center' }}>
+          {key(icons.shift, { w: 45, k: 'shift' })}
+          <div style={{ display: 'flex', gap: 6.5, flex: 1 }}>
+            {['z','x','c','v','b','n','m'].map(l => key(l, { flex: true, k: l }))}
+          </div>
+          {key(icons.del, { w: 45, k: 'del' })}
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {key('ABC', { w: 92.25, fs: 18, k: 'abc' })}
+          {key('', { flex: true, k: 'space' })}
+          {key(icons.ret, { w: 92.25, ret: true, k: 'ret' })}
+        </div>
+      </div>
+
+      {/* bottom spacer (emoji+mic area, icons omitted) */}
+      <div style={{ height: 56, width: '100%', position: 'relative' }} />
+    </div>
+  );
+}
+
+Object.assign(window, {
+  IOSDevice, IOSStatusBar, IOSNavBar, IOSGlassPill, IOSList, IOSListRow, IOSKeyboard,
+});
+
+// ═══ android-frame.jsx ═══
+
+// Android.jsx — Simplified Android (Material 3) device frame
+// Status bar + top app bar + content + gesture nav + keyboard.
+// Based on Figma M3 spec. No dependencies, no image assets.
+
+const MD_C = {
+  surface: '#f4fbf8',
+  surfaceVariant: '#dae5e1',
+  inverseOnSurface: '#ecf2ef',
+  secondaryContainer: '#cde8e1',
+  primaryFixedDim: '#83d5c6',
+  onSurface: '#171d1b',
+  onSurfaceVar: '#49454f',
+  onPrimaryContainer: '#00201c',
+  primary: '#006a60',
+  frameBorder: 'rgba(116,119,117,0.5)',
+};
+
+// ─────────────────────────────────────────────────────────────
+// Status bar (time left, wifi/cell/battery right)
+// ─────────────────────────────────────────────────────────────
+function AndroidStatusBar({ dark = false }) {
+  const c = dark ? '#fff' : MD_C.onSurface;
+  return (
+    <div style={{
+      height: 40, display: 'flex', alignItems: 'center',
+      justifyContent: 'space-between', padding: '0 16px',
+      position: 'relative',
+      fontFamily: 'Roboto, system-ui, sans-serif',
+    }}>
+      {/* time left */}
+      <div style={{ width: 128, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 14, fontWeight: 400, letterSpacing: 0.25, lineHeight: '20px', color: c }}>9:30</span>
+      </div>
+      {/* camera punch-hole (center) */}
+      <div style={{
+        position: 'absolute', left: '50%', top: 8, transform: 'translateX(-50%)',
+        width: 24, height: 24, borderRadius: 100, background: '#2e2e2e',
+      }} />
+      {/* status icons right */}
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', paddingRight: 2 }}>
+          <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: -2 }}>
+            <path d="M8 13.3L.67 5.97a10.37 10.37 0 0114.66 0L8 13.3z" fill={c}/>
+          </svg>
+          <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginRight: -2 }}>
+            <path d="M14.67 14.67V1.33L1.33 14.67h13.34z" fill={c}/>
+          </svg>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 16 16">
+          <rect x="3.75" y="2" width="8.5" height="13" rx="1.5" fill={c}/>
+          <rect x="5.5" y="0.9" width="5" height="2" rx="0.5" fill={c}/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Top app bar (Material 3 small/medium)
+// ─────────────────────────────────────────────────────────────
+function AndroidAppBar({ title = 'Title', large = false }) {
+  const iconDot = (
+    <div style={{
+      width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{ width: 22, height: 22, borderRadius: '50%', background: MD_C.onSurfaceVar, opacity: 0.3 }} />
+    </div>
+  );
+  return (
+    <div style={{ background: MD_C.surface, padding: '4px 4px 0' }}>
+      <div style={{ height: 56, display: 'flex', alignItems: 'center', gap: 4 }}>
+        {iconDot}
+        {!large && (
+          <span style={{
+            flex: 1, fontSize: 22, fontWeight: 400, color: MD_C.onSurface,
+            fontFamily: 'Roboto, system-ui, sans-serif',
+          }}>{title}</span>
+        )}
+        {large && <div style={{ flex: 1 }} />}
+        {iconDot}
+      </div>
+      {large && (
+        <div style={{
+          padding: '16px 16px 20px',
+          fontSize: 28, fontWeight: 400, color: MD_C.onSurface,
+          fontFamily: 'Roboto, system-ui, sans-serif',
+        }}>{title}</div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// List item (Material 3)
+// ─────────────────────────────────────────────────────────────
+function AndroidListItem({ headline, supporting, leading }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 16,
+      padding: '12px 16px', minHeight: 56, boxSizing: 'border-box',
+      fontFamily: 'Roboto, system-ui, sans-serif',
+    }}>
+      {leading && (
+        <div style={{
+          width: 40, height: 40, borderRadius: '50%',
+          background: MD_C.primary, color: '#fff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 18, fontWeight: 500, flexShrink: 0,
+        }}>{leading}</div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 16, color: MD_C.onSurface, lineHeight: '24px' }}>{headline}</div>
+        {supporting && (
+          <div style={{ fontSize: 14, color: MD_C.onSurfaceVar, lineHeight: '20px' }}>{supporting}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Gesture nav bar (pill)
+// ─────────────────────────────────────────────────────────────
+function AndroidNavBar({ dark = false }) {
+  return (
+    <div style={{
+      height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{
+        width: 108, height: 4, borderRadius: 2,
+        background: dark ? '#fff' : MD_C.onSurface, opacity: 0.4,
+      }} />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Device frame — wraps everything
+// ─────────────────────────────────────────────────────────────
+function AndroidDevice({
+  children, width = 412, height = 892, dark = false,
+  title, large = false, keyboard = false,
+}) {
+  return (
+    <div style={{
+      width, height, borderRadius: 18, overflow: 'hidden',
+      background: dark ? '#1d1b20' : MD_C.surface,
+      border: `8px solid ${MD_C.frameBorder}`,
+      boxShadow: '0 30px 80px rgba(0,0,0,0.25)',
+      display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
+    }}>
+      <AndroidStatusBar dark={dark} />
+      {title !== undefined && <AndroidAppBar title={title} large={large} />}
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        {children}
+      </div>
+      {keyboard && <AndroidKeyboard />}
+      <AndroidNavBar dark={dark} />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Keyboard — Gboard (Material 3)
+// ─────────────────────────────────────────────────────────────
+function AndroidKeyboard() {
+  let _k = 0;
+  const key = (l, { flex = 1, bg = MD_C.surface, r = 6, minW, fs = 21 } = {}) => (
+    <div key={_k++} style={{
+      height: 46, borderRadius: r, flex, minWidth: minW,
+      background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: 'Roboto, system-ui', fontSize: fs,
+      color: MD_C.onPrimaryContainer,
+    }}>{l}</div>
+  );
+  const row = (keys, style = {}) => (
+    <div style={{ display: 'flex', gap: 6, justifyContent: 'center', ...style }}>
+      {keys.map(l => key(l))}
+    </div>
+  );
+  return (
+    <div style={{
+      background: MD_C.inverseOnSurface, padding: '0 8px 8px',
+      display: 'flex', flexDirection: 'column', gap: 4,
+    }}>
+      {/* navbar spacer (icons omitted) */}
+      <div style={{ height: 44 }} />
+      {/* key rows */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {row(['q','w','e','r','t','y','u','i','o','p'])}
+        {row(['a','s','d','f','g','h','j','k','l'], { padding: '0 20px' })}
+        <div style={{ display: 'flex', gap: 6 }}>
+          {key('', { bg: MD_C.surfaceVariant })}
+          <div style={{ display: 'flex', gap: 6, flex: 7, minWidth: 274 }}>
+            {['z','x','c','v','b','n','m'].map(l => key(l))}
+          </div>
+          {key('', { bg: MD_C.surfaceVariant })}
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {key('?123', { bg: MD_C.secondaryContainer, r: 100, minW: 58, fs: 14 })}
+          {key(',', { bg: MD_C.surfaceVariant })}
+          {key('', { flex: 3, minW: 154 })}
+          {key('.', { bg: MD_C.surfaceVariant })}
+          {key('', { bg: MD_C.primaryFixedDim, r: 100, minW: 58 })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, {
+  AndroidDevice, AndroidStatusBar, AndroidAppBar, AndroidListItem, AndroidNavBar, AndroidKeyboard,
+});
+
+// ═══ screens-home.jsx ═══
+// screens-home.jsx — Home dashboard
+
+function StreakDay({ day, value, theme }) {
+  const t = theme;
+  const filled = value === 1;
+  const partial = value > 0 && value < 1;
+  const bg = filled ? t.grad : partial ? t.gradSoft : t.chip;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: filled ? t.p2 : t.textDim, letterSpacing: 0.5 }}>{day}</div>
+      <div style={{
+        width: 32, height: 32, borderRadius: 16, background: bg,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: filled ? '#fff' : t.textDim,
+        border: !filled && !partial ? `1px solid ${t.border}` : 'none',
+      }}>
+        {filled && <Icon name="check" size={16} color="#fff"/>}
+        {partial && <div style={{width:8,height:8,borderRadius:4,background:t.p2}}/>}
+      </div>
+    </div>
+  );
+}
+
+function MuscleHeatmap({ theme }) {
+  const t = theme;
+  // Show body silhouette with muscle activity
+  const muscles = [
+    { name: 'chest', cx: 50, cy: 26, level: 0.7 },
+    { name: 'shoulder-l', cx: 36, cy: 22, level: 0.5 },
+    { name: 'shoulder-r', cx: 64, cy: 22, level: 0.5 },
+    { name: 'arm-l', cx: 30, cy: 38, level: 0.6 },
+    { name: 'arm-r', cx: 70, cy: 38, level: 0.6 },
+    { name: 'core', cx: 50, cy: 44, level: 0.3 },
+    { name: 'quad-l', cx: 44, cy: 68, level: 0.8 },
+    { name: 'quad-r', cx: 56, cy: 68, level: 0.8 },
+    { name: 'calf-l', cx: 44, cy: 88, level: 0.2 },
+    { name: 'calf-r', cx: 56, cy: 88, level: 0.2 },
+  ];
+  const colorAt = (lvl) => {
+    if (lvl > 0.6) return t.danger;
+    if (lvl > 0.3) return t.warn;
+    if (lvl > 0) return t.p1;
+    return t.border;
+  };
+  return (
+    <svg viewBox="0 0 100 100" style={{ width: '100%', maxWidth: 140, height: 'auto' }}>
+      {/* Body silhouette */}
+      <ellipse cx="50" cy="14" rx="8" ry="9" fill={t.surface2} stroke={t.border}/>
+      <path d="M30 20 L70 20 L72 50 L66 80 L60 95 L55 95 L52 60 L48 60 L45 95 L40 95 L34 80 L28 50 Z"
+            fill={t.surface2} stroke={t.border}/>
+      {muscles.map(m => (
+        <circle key={m.name} cx={m.cx} cy={m.cy} r={5} fill={colorAt(m.level)} opacity={0.85}/>
+      ))}
+    </svg>
+  );
+}
+
+function HomeScreen({ theme }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const days = lang === 'ru' ? ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'] : ['Mo','Tu','We','Th','Fr','Sa','Su'];
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      {/* Header */}
+      <div style={{ padding: '8px 18px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Avatar name={ME.name} size={42} color={t.p3} color2={t.p2}/>
+          <div>
+            <div style={{ fontSize: 12, color: t.textDim, fontWeight: 500 }}>{tr('greeting')}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: t.text }}>{ME.name}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px',
+            background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12,
+          }}>
+            <Icon name="flame" size={14} color={t.danger}/>
+            <span style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{ME.streak}</span>
+          </div>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px',
+            background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12,
+          }}>
+            <Icon name="bolt" size={14} color={t.warn}/>
+            <span style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{ME.coins}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Hero — Today's plan */}
+      <div style={{ padding: '16px 18px 0' }}>
+        <div style={{
+          background: t.grad, borderRadius: 20, padding: 18, color: '#fff',
+          position: 'relative', overflow: 'hidden',
+          boxShadow: '0 12px 32px rgba(0,194,255,0.25)',
+        }}>
+          <div style={{
+            position: 'absolute', right: -30, top: -30, width: 160, height: 160,
+            borderRadius: '50%', background: 'rgba(255,255,255,0.12)',
+          }}/>
+          <div style={{
+            position: 'absolute', right: 20, bottom: -20, width: 80, height: 80,
+            borderRadius: '50%', background: 'rgba(255,255,255,0.08)',
+          }}/>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, opacity: 0.85, textTransform: 'uppercase' }}>{tr('todayPlan')}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4, letterSpacing: -0.5 }}>Upper body — Monday</div>
+          <div style={{ display: 'flex', gap: 14, marginTop: 12, fontSize: 13, opacity: 0.95 }}>
+            <span>⏱ 65 min</span><span>· 6 ex</span><span>· 28 sets</span>
+          </div>
+          <button style={{
+            marginTop: 16, padding: '10px 18px', borderRadius: 12, border: 'none',
+            background: '#fff', color: '#0B1020', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'inherit',
+          }}>
+            <Icon name="play" size={14} color="#0B1020"/>
+            {tr('startWorkout')}
+          </button>
+        </div>
+      </div>
+
+      {/* Streak row */}
+      <div style={{ padding: '0 18px', marginTop: 18 }}>
+        <Card padding={16}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Icon name="flame" size={18} color={t.danger}/>
+              <span style={{ fontSize: 15, fontWeight: 700, color: t.text }}>{tr('streak')}</span>
+              <span style={{ fontSize: 13, color: t.textMuted }}>· {ME.streak} {tr('streakDays')}</span>
+            </div>
+            <Icon name="chevron-right" size={16} color={t.textDim}/>
+          </div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {STREAK_WEEK.map((v, i) => <StreakDay key={i} day={days[i]} value={v} theme={t}/>)}
+          </div>
+        </Card>
+      </div>
+
+      {/* Quests */}
+      <SectionHeader title={tr('achievements')} action={tr('done')+' →'} theme={t}/>
+      <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {QUESTS.map(q => (
+          <Card key={q.id} padding={14}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: t.text, flex: 1 }}>
+                {lang === 'ru' ? q.textRu : q.text}
+              </div>
+              <div style={{
+                padding: '4px 10px', borderRadius: 10, background: t.gradSoft,
+                color: t.p2, fontSize: 11, fontWeight: 700,
+              }}>+{q.xp} XP</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <ProgressBar value={q.progress} max={q.total} height={6} style={{ flex: 1 }}/>
+              <span style={{ fontSize: 12, color: t.textMuted, fontWeight: 600 }}>{q.progress}/{q.total}</span>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Stats grid */}
+      <SectionHeader title={tr('thisWeek')} theme={t}/>
+      <div style={{ padding: '0 18px', display: 'flex', gap: 10 }}>
+        <StatTile value={ME.workoutsThisWeek} label={tr('workout')} icon="dumbbell" color={t.p2}/>
+        <StatTile value="4h 20m" label={tr('clock') || 'Time'} icon="clock" color={t.p1}/>
+        <StatTile value="12.4t" label="Volume" icon="chart" color={t.p3}/>
+      </div>
+
+      {/* Muscle activity */}
+      <SectionHeader title={tr('muscleHeatmap')} theme={t}/>
+      <div style={{ padding: '0 18px' }}>
+        <Card padding={16}>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+            <MuscleHeatmap theme={t}/>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                { label: lang === 'ru' ? 'Грудь' : 'Chest', val: 70, c: t.danger },
+                { label: lang === 'ru' ? 'Ноги' : 'Legs', val: 85, c: t.danger },
+                { label: lang === 'ru' ? 'Спина' : 'Back', val: 45, c: t.warn },
+                { label: lang === 'ru' ? 'Кор' : 'Core', val: 25, c: t.p1 },
+              ].map((m, i) => (
+                <div key={i}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
+                    <span style={{ color: t.textMuted, fontWeight: 600 }}>{m.label}</span>
+                    <span style={{ color: t.text, fontWeight: 700 }}>{m.val}%</span>
+                  </div>
+                  <ProgressBar value={m.val} color={m.c} height={5}/>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Recent routines */}
+      <SectionHeader title={tr('recentRoutines')} action="→" theme={t}/>
+      <div style={{ paddingLeft: 18, display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4, paddingRight: 18 }}>
+        {ROUTINES.slice(0, 4).map(r => (
+          <div key={r.id} style={{
+            minWidth: 180, padding: 14, borderRadius: 16,
+            background: `linear-gradient(135deg, ${r.color}22, ${r.color}11)`,
+            border: `1px solid ${r.color}33`,
+            position: 'relative', overflow: 'hidden', flexShrink: 0,
+          }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: r.color, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 10,
+            }}>
+              <Icon name="dumbbell" size={18} color="#fff"/>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: t.text, marginBottom: 4 }}>
+              {lang === 'ru' ? r.nameRu : r.name}
+            </div>
+            <div style={{ fontSize: 11, color: t.textMuted }}>{r.sets} sets · {r.duration} min</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+window.HomeScreen = HomeScreen;
+
+// ═══ screens-workout.jsx ═══
+// screens-workout.jsx — Workout tracker, exercises, routines, custom, active workout
+
+// ── Tab pill (Tracker / My Plan)
+function TabPills({ tabs, active, onChange, theme }) {
+  const t = theme;
+  return (
+    <div style={{
+      display: 'flex', padding: 4, borderRadius: 14,
+      background: t.surface2, gap: 4,
+    }}>
+      {tabs.map(x => (
+        <button key={x.key} onClick={() => onChange(x.key)} style={{
+          flex: 1, padding: '10px 12px', borderRadius: 10,
+          border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+          background: active === x.key ? t.surface : 'transparent',
+          color: active === x.key ? t.text : t.textMuted,
+          fontWeight: 700, fontSize: 14, transition: 'all .15s',
+          boxShadow: active === x.key ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+        }}>{x.label}</button>
+      ))}
+    </div>
+  );
+}
+
+// ── Big action card
+function ActionCard({ title, icon, color, onClick, theme }) {
+  const t = theme;
+  return (
+    <button onClick={onClick} style={{
+      width: '100%', padding: 18, borderRadius: 16,
+      background: t.surface, border: `1px solid ${t.border}`,
+      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      fontFamily: 'inherit', textAlign: 'left',
+    }}>
+      <div style={{ fontSize: 16, fontWeight: 700, color: t.text }}>{title}</div>
+      <div style={{
+        width: 44, height: 44, borderRadius: 12,
+        background: `linear-gradient(135deg, ${color}, ${color}99)`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: `0 6px 16px ${color}44`,
+      }}>
+        <Icon name={icon} size={22} color="#fff"/>
+      </div>
+    </button>
+  );
+}
+
+function WorkoutTrackerScreen({ theme, onNav }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      {/* Hero stats strip */}
+      <div style={{ padding: '8px 18px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Avatar name={ME.name} size={40} color={t.p3} color2={t.p2}/>
+            <div>
+              <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600 }}>Lv.{ME.level}</div>
+              <div style={{ width: 80, height: 4, background: t.chip, borderRadius: 2, marginTop: 2 }}>
+                <div style={{ width: '74%', height: '100%', background: t.grad, borderRadius: 2 }}/>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12 }}>
+              <Icon name="flame" size={14} color={t.danger}/>
+              <span style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{ME.streak}</span>
+            </div>
+            <IconBtn name="plus" size={32} iconSize={18} bg={t.grad} color="#fff"/>
+          </div>
+        </div>
+      </div>
+
+      {/* Tracker/MyPlan tabs */}
+      <div style={{ padding: '16px 18px 0' }}>
+        <TabPills active="tracker" onChange={()=>{}} theme={t} tabs={[
+          { key: 'tracker', label: tr('tracker') },
+          { key: 'plan', label: tr('myPlan') },
+        ]}/>
+      </div>
+
+      {/* Planned workout */}
+      <SectionHeader title={tr('plannedWorkout')} theme={t}/>
+      <div style={{ padding: '0 18px' }}>
+        <button onClick={() => onNav('createRoutine')} style={{
+          width: '100%', padding: 18, borderRadius: 16,
+          background: t.surface, border: `1px dashed ${t.borderStrong}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: t.gradSoft, display: 'flex', alignItems: 'center', justifyContent: 'center', color: t.p2 }}>
+              <Icon name="edit" size={20}/>
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: t.text }}>{tr('createPlan')}</div>
+          </div>
+          <Icon name="chevron-right" size={18} color={t.textDim}/>
+        </button>
+      </div>
+
+      {/* New workout */}
+      <SectionHeader title={lang === 'ru' ? 'Новая тренировка' : 'New workout'} theme={t}/>
+      <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <ActionCard title={tr('startEmptyWorkout')} icon="dumbbell" color={t.p2} theme={t} onClick={() => onNav('activeWorkout')}/>
+        <ActionCard title={tr('generateWorkout')} icon="spark" color={t.p1} theme={t}/>
+      </div>
+
+      {/* Routines */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', marginTop: 18, marginBottom: 10 }}>
+        <div style={{ fontSize: 17, fontWeight: 700, color: t.text }}>{tr('routines')}</div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <IconBtn name="list" size={32} iconSize={16}/>
+          <IconBtn name="plus" size={32} iconSize={16}/>
+        </div>
+      </div>
+
+      <div style={{ padding: '0 18px 4px', fontSize: 13, color: t.textMuted, fontWeight: 600 }}>
+        {tr('myRoutines')} ({ROUTINES.length})
+      </div>
+
+      <div style={{ padding: '8px 18px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {ROUTINES.map(r => (
+          <Card key={r.id} padding={14} onClick={() => onNav('routineDetail', r)}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 6, height: 32, borderRadius: 3, background: r.color }}/>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: t.text }}>
+                    {lang === 'ru' ? r.nameRu : r.name}
+                  </div>
+                  <div style={{ fontSize: 11, color: t.textMuted, marginTop: 2 }}>
+                    {r.sets} {tr('sets')} · {r.duration} min
+                  </div>
+                </div>
+              </div>
+              <IconBtn name="more" size={28} iconSize={16}/>
+            </div>
+            {/* Mini exercise list */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 16 }}>
+              {r.exercises.slice(0, 2).map(eid => {
+                const ex = EXERCISE_LIB.find(x => x.id === eid);
+                return ex ? (
+                  <div key={eid} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{
+                      width: 24, height: 24, borderRadius: 6, background: t.chip,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 12,
+                    }}>{ex.icon}</div>
+                    <div style={{ fontSize: 12, color: t.text, fontWeight: 500 }}>
+                      {lang === 'ru' ? ex.nameRu : ex.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: t.textDim, marginLeft: 'auto' }}>3 {tr('sets')}</div>
+                  </div>
+                ) : null;
+              })}
+              {r.exercises.length > 2 && (
+                <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600 }}>
+                  +{r.exercises.length - 2} more
+                </div>
+              )}
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Exercises Screen (full library)
+function ExercisesScreen({ theme, onNav, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const [filter, setFilter] = React.useState('all');
+  const [query, setQuery] = React.useState('');
+  const list = EXERCISE_LIB.filter(e =>
+    (filter === 'all' || e.muscle === filter) &&
+    ((lang === 'ru' ? e.nameRu : e.name).toLowerCase().includes(query.toLowerCase()))
+  );
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      <ScreenHeader
+        title={tr('exercises')}
+        left={<IconBtn name="arrow-left" size={36} iconSize={18} onClick={onBack}/>}
+        right={<IconBtn name="plus" size={36} iconSize={18} bg={t.grad} color="#fff" onClick={() => onNav('createExercise')}/>}
+        large
+        theme={t}
+      />
+
+      {/* Search */}
+      <div style={{ padding: '0 18px 12px' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '12px 14px', borderRadius: 12,
+          background: t.surface, border: `1px solid ${t.border}`,
+        }}>
+          <Icon name="search" size={18} color={t.textDim}/>
+          <input
+            placeholder={tr('search')}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            style={{
+              flex: 1, border: 'none', outline: 'none', background: 'transparent',
+              fontSize: 15, color: t.text, fontFamily: 'inherit',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Filter pills */}
+      <div style={{
+        padding: '0 18px 12px', display: 'flex', gap: 8, overflowX: 'auto',
+      }}>
+        {MUSCLE_GROUPS.map(g => (
+          <Pill key={g.key} active={filter === g.key} onClick={() => setFilter(g.key)} color={t.p2}>
+            {lang === 'ru' ? g.ru : g.en}
+          </Pill>
+        ))}
+      </div>
+
+      {/* List */}
+      <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {list.map(ex => (
+          <div key={ex.id} style={{
+            display: 'flex', alignItems: 'center', gap: 12, padding: 12,
+            background: t.surface, border: `1px solid ${t.border}`, borderRadius: 14,
+          }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 10,
+              background: t.chip, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 22,
+            }}>{ex.icon}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: t.text }}>
+                {lang === 'ru' ? ex.nameRu : ex.name}
+              </div>
+              <div style={{ fontSize: 11, color: t.textMuted, marginTop: 2 }}>
+                {lang === 'ru' ? ex.muscleRu : ex.muscle} · {ex.equipment}
+              </div>
+            </div>
+            <Icon name="chevron-right" size={16} color={t.textDim}/>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Create Custom Exercise
+function CreateExerciseScreen({ theme, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const [name, setName] = React.useState('');
+  const [muscle, setMuscle] = React.useState('Chest');
+  const [equipment, setEquipment] = React.useState('Barbell');
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      <ScreenHeader
+        title={tr('createCustom')}
+        left={<button onClick={onBack} style={{ border: 'none', background: 'transparent', color: t.p2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15 }}>{tr('cancel')}</button>}
+        right={<button style={{ border: 'none', background: 'transparent', color: t.p2, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15 }}>{tr('save')}</button>}
+        large
+        theme={t}
+      />
+
+      <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Image picker */}
+        <button style={{
+          width: '100%', height: 120, borderRadius: 16,
+          border: `1px dashed ${t.borderStrong}`, background: t.surface,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}>
+          <Icon name="camera" size={28} color={t.textDim}/>
+          <span style={{ fontSize: 13, color: t.textMuted, fontWeight: 600 }}>
+            {lang === 'ru' ? 'Добавить фото' : 'Add photo'}
+          </span>
+        </button>
+
+        {/* Name */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6, paddingLeft: 4 }}>{tr('name')}</div>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder={lang === 'ru' ? 'Жим узким хватом' : 'Close-grip bench'}
+            style={{
+              width: '100%', padding: '14px 16px', borderRadius: 12,
+              border: `1px solid ${t.border}`, background: t.surface,
+              color: t.text, fontSize: 15, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+            }}
+          />
+        </div>
+
+        {/* Muscle group */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6, paddingLeft: 4 }}>{lang === 'ru' ? 'Группа мышц' : 'Muscle group'}</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {MUSCLE_GROUPS.filter(g => g.key !== 'all').map(g => (
+              <Pill key={g.key} active={muscle === g.key} onClick={() => setMuscle(g.key)} color={t.p2}>
+                {lang === 'ru' ? g.ru : g.en}
+              </Pill>
+            ))}
+          </div>
+        </div>
+
+        {/* Equipment */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6, paddingLeft: 4 }}>{lang === 'ru' ? 'Оборудование' : 'Equipment'}</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['Barbell','Dumbbell','Machine','Cable','Bodyweight'].map(eq => (
+              <Pill key={eq} active={equipment === eq} onClick={() => setEquipment(eq)} color={t.p1}>{eq}</Pill>
+            ))}
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6, paddingLeft: 4 }}>{lang === 'ru' ? 'Заметки' : 'Notes'}</div>
+          <textarea
+            placeholder={lang === 'ru' ? 'Техника, советы…' : 'Form cues, tips…'}
+            style={{
+              width: '100%', minHeight: 80, padding: '14px 16px', borderRadius: 12,
+              border: `1px solid ${t.border}`, background: t.surface,
+              color: t.text, fontSize: 14, fontFamily: 'inherit', outline: 'none', resize: 'none', boxSizing: 'border-box',
+            }}
+          />
+        </div>
+
+        <GradButton icon="check">{lang === 'ru' ? 'Создать упражнение' : 'Create exercise'}</GradButton>
+      </div>
+    </div>
+  );
+}
+
+// ── Active Workout (in-progress tracker)
+function ActiveWorkoutScreen({ theme, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const [timer, setTimer] = React.useState(0);
+  const [resting, setResting] = React.useState(false);
+  const [rest, setRest] = React.useState(0);
+
+  React.useEffect(() => {
+    const id = setInterval(() => setTimer(s => s + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+  React.useEffect(() => {
+    if (!resting) return;
+    const id = setInterval(() => setRest(r => Math.max(0, r - 1)), 1000);
+    return () => clearInterval(id);
+  }, [resting]);
+
+  const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
+
+  const exercises = [
+    { ex: EXERCISE_LIB[1], sets: [{w:50,r:10,done:true},{w:55,r:8,done:true},{w:55,r:8,done:false}] },
+    { ex: EXERCISE_LIB[2], sets: [{w:0,r:10,done:true},{w:0,r:9,done:false},{w:0,r:8,done:false}] },
+    { ex: EXERCISE_LIB[10], sets: [{w:25,r:12,done:false},{w:25,r:12,done:false},{w:25,r:12,done:false}] },
+  ];
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 80 }}>
+      {/* Header with timer */}
+      <div style={{
+        padding: '4px 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <button onClick={onBack} style={{
+          border: 'none', background: t.chip, color: t.text, padding: '8px 14px',
+          borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
+          fontSize: 13, fontWeight: 600,
+        }}>{tr('back')}</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: t.p1, fontSize: 18, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }}>
+          <Icon name="clock" size={18}/>
+          {fmt(timer)}
+        </div>
+        <button style={{
+          border: 'none', background: t.success, color: '#fff', padding: '8px 14px',
+          borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
+          fontSize: 13, fontWeight: 700,
+        }}>{tr('finishWorkout')}</button>
+      </div>
+
+      {/* Rest banner */}
+      {resting && rest > 0 && (
+        <div style={{ padding: '0 18px 12px' }}>
+          <div style={{
+            padding: 14, borderRadius: 14, background: t.grad, color: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div>
+              <div style={{ fontSize: 11, opacity: 0.85, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{tr('restTimer')}</div>
+              <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }}>{fmt(rest)}</div>
+            </div>
+            <button onClick={() => setResting(false)} style={{
+              border: 'none', background: 'rgba(255,255,255,0.25)', color: '#fff',
+              padding: '8px 14px', borderRadius: 999, cursor: 'pointer', fontWeight: 700, fontFamily: 'inherit',
+            }}>Skip</button>
+          </div>
+        </div>
+      )}
+
+      {/* Exercise blocks */}
+      <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {exercises.map((eb, ei) => (
+          <Card key={ei} padding={14}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 8, background: t.chip, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
+                {eb.ex.icon}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: t.text }}>
+                  {lang === 'ru' ? eb.ex.nameRu : eb.ex.name}
+                </div>
+                <div style={{ fontSize: 11, color: t.textMuted }}>
+                  {lang === 'ru' ? eb.ex.muscleRu : eb.ex.muscle}
+                </div>
+              </div>
+              <IconBtn name="more" size={28} iconSize={14}/>
+            </div>
+
+            {/* Set table */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', fontSize: 10, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', padding: '0 4px' }}>
+                <div style={{ width: 36 }}>{tr('set')}</div>
+                <div style={{ flex: 1 }}>{tr('weight')}</div>
+                <div style={{ flex: 1 }}>{tr('reps')}</div>
+                <div style={{ width: 30 }}/>
+              </div>
+              {eb.sets.map((s, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', padding: '8px 4px', borderRadius: 8,
+                  background: s.done ? t.gradSoft : 'transparent',
+                }}>
+                  <div style={{ width: 36, fontSize: 14, fontWeight: 700, color: s.done ? t.p2 : t.text }}>{i + 1}</div>
+                  <div style={{ flex: 1, fontSize: 14, color: t.text, fontWeight: 600 }}>{s.w > 0 ? `${s.w} kg` : '—'}</div>
+                  <div style={{ flex: 1, fontSize: 14, color: t.text, fontWeight: 600 }}>{s.r}</div>
+                  <button onClick={() => { setResting(true); setRest(90); }} style={{
+                    width: 30, height: 30, borderRadius: 8, border: 'none', cursor: 'pointer',
+                    background: s.done ? t.p1 : t.chip,
+                    color: s.done ? '#fff' : t.textDim,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Icon name="check" size={14}/>
+                  </button>
+                </div>
+              ))}
+              <button style={{
+                marginTop: 6, padding: '8px', borderRadius: 8, border: `1px dashed ${t.borderStrong}`,
+                background: 'transparent', color: t.textMuted, fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}>+ {lang === 'ru' ? 'Подход' : 'Set'}</button>
+            </div>
+          </Card>
+        ))}
+
+        <button style={{
+          padding: 14, borderRadius: 14, border: `1px dashed ${t.borderStrong}`,
+          background: 'transparent', color: t.p2, fontWeight: 700, fontSize: 14, cursor: 'pointer',
+          fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}>
+          <Icon name="plus" size={16}/>
+          {tr('addExercise')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { WorkoutTrackerScreen, ExercisesScreen, CreateExerciseScreen, ActiveWorkoutScreen, TabPills });
+
+// ═══ screens-discover.jsx ═══
+// screens-discover.jsx — Tinder-style swipe + matches + chat + filters + boost
+
+// ── Swipe Card (front view of a user)
+function SwipeCard({ user, offset, rotation, theme, language, top = false }) {
+  const t = theme;
+  const lang = language;
+  const opa = top ? 1 : 0.7;
+
+  // Show "LIKE" / "NOPE" badge based on offset
+  const showLike = offset > 30;
+  const showNope = offset < -30;
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      borderRadius: 20, overflow: 'hidden',
+      transform: `translateX(${offset}px) rotate(${rotation}deg)`,
+      transformOrigin: 'bottom center',
+      transition: top ? 'none' : 'transform .2s',
+      boxShadow: '0 20px 50px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)',
+      opacity: opa,
+      background: '#111',
+    }}>
+      {/* Photo */}
+      <PhotoSlot color={user.color} color2={user.color2} style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }} label="user photo"/>
+
+      {/* Photo indicator (top dots) */}
+      <div style={{
+        position: 'absolute', top: 12, left: 12, right: 12, display: 'flex', gap: 4, zIndex: 3,
+      }}>
+        {Array.from({ length: user.photos }).map((_, i) => (
+          <div key={i} style={{
+            flex: 1, height: 3, borderRadius: 1.5,
+            background: i === 0 ? '#fff' : 'rgba(255,255,255,0.35)',
+          }}/>
+        ))}
+      </div>
+
+      {/* LIKE / NOPE badges */}
+      {showLike && (
+        <div style={{
+          position: 'absolute', top: 36, left: 20, zIndex: 4,
+          border: `4px solid ${t.like}`, borderRadius: 10,
+          padding: '4px 12px', transform: 'rotate(-18deg)',
+          color: t.like, fontWeight: 900, fontSize: 28, letterSpacing: 2,
+          background: 'rgba(0,0,0,0.2)',
+        }}>LIKE</div>
+      )}
+      {showNope && (
+        <div style={{
+          position: 'absolute', top: 36, right: 20, zIndex: 4,
+          border: `4px solid ${t.nope}`, borderRadius: 10,
+          padding: '4px 12px', transform: 'rotate(18deg)',
+          color: t.nope, fontWeight: 900, fontSize: 28, letterSpacing: 2,
+          background: 'rgba(0,0,0,0.2)',
+        }}>NOPE</div>
+      )}
+
+      {/* Gradient overlay for text */}
+      <div style={{
+        position: 'absolute', left: 0, right: 0, bottom: 0, height: '55%',
+        background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 100%)',
+        zIndex: 2,
+      }}/>
+
+      {/* Info */}
+      <div style={{
+        position: 'absolute', left: 18, right: 18, bottom: 18, zIndex: 3, color: '#fff',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: -0.5 }}>{user.name}</span>
+          <span style={{ fontSize: 24, fontWeight: 400, opacity: 0.95 }}>{user.age}</span>
+          <div style={{
+            marginLeft: 'auto',
+            display: 'flex', alignItems: 'center', gap: 4, padding: '4px 8px',
+            borderRadius: 999, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)',
+            fontSize: 11, fontWeight: 600,
+          }}>
+            <div style={{ width: 6, height: 6, borderRadius: 3, background: '#3DDC97' }}/>
+            online
+          </div>
+        </div>
+
+        {/* Goal & gym chips */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+          <div style={{
+            padding: '5px 10px', borderRadius: 999,
+            background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)',
+            fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4,
+          }}>
+            <Icon name="dumbbell" size={11} color="#fff"/>
+            {lang === 'ru' ? user.goalRu : user.goal}
+          </div>
+          <div style={{
+            padding: '5px 10px', borderRadius: 999,
+            background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)',
+            fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4,
+          }}>
+            <Icon name="location" size={11} color="#fff"/>
+            {user.distance} {lang === 'ru' ? 'км' : 'km'}
+          </div>
+          <div style={{
+            padding: '5px 10px', borderRadius: 999,
+            background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)',
+            fontSize: 11, fontWeight: 600,
+          }}>
+            {lang === 'ru' ? user.levelRu : user.level}
+          </div>
+        </div>
+
+        {/* Bio preview */}
+        <div style={{ fontSize: 13, lineHeight: 1.4, opacity: 0.95 }}>
+          {lang === 'ru' ? user.bioRu : user.bio}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Action button (large round buttons under cards)
+function ActionBtn({ icon, color, size = 56, onClick, glow }) {
+  return (
+    <button onClick={onClick} style={{
+      width: size, height: size, borderRadius: size / 2,
+      border: 'none', cursor: 'pointer',
+      background: '#fff', color,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: `0 6px 20px rgba(0,0,0,0.15), 0 0 0 2px ${color}22${glow ? `, 0 0 30px ${color}88` : ''}`,
+      transition: 'transform .12s',
+    }}>
+      <Icon name={icon} size={size * 0.45} color={color}/>
+    </button>
+  );
+}
+
+// ── Main Discover screen (swipe cards)
+function DiscoverScreen({ theme, onNav }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const [stack, setStack] = React.useState(DISCOVER_USERS);
+  const [offset, setOffset] = React.useState(0);
+  const [matchedUser, setMatchedUser] = React.useState(null);
+  const startX = React.useRef(0);
+  const dragging = React.useRef(false);
+
+  const handlePointerDown = (e) => {
+    dragging.current = true;
+    startX.current = e.clientX;
+  };
+  const handlePointerMove = (e) => {
+    if (!dragging.current) return;
+    setOffset(e.clientX - startX.current);
+  };
+  const handlePointerUp = () => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    if (Math.abs(offset) > 80) {
+      const direction = offset > 0 ? 'right' : 'left';
+      doSwipe(direction);
+    } else {
+      setOffset(0);
+    }
+  };
+
+  const doSwipe = (dir) => {
+    const top = stack[0];
+    // Animate out
+    setOffset(dir === 'right' ? 500 : -500);
+    setTimeout(() => {
+      setStack(prev => prev.slice(1));
+      setOffset(0);
+      // Random match on right swipe
+      if (dir === 'right' && Math.random() > 0.4) {
+        setMatchedUser(top);
+      }
+    }, 250);
+  };
+
+  const rotation = offset / 20;
+
+  return (
+    <div style={{
+      background: t.bg, minHeight: '100%', display: 'flex', flexDirection: 'column',
+    }}>
+      {/* Header */}
+      <div style={{ padding: '4px 18px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <IconBtn name="sliders" onClick={() => onNav('discoverFilters')}/>
+        <div style={{
+          fontSize: 22, fontWeight: 800,
+          background: t.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          letterSpacing: -0.5,
+        }}>GymBuddy</div>
+        <IconBtn name="bell" badge={3} onClick={() => onNav('matches')}/>
+      </div>
+
+      {/* Card stack */}
+      <div style={{ flex: 1, position: 'relative', padding: '4px 16px 0', minHeight: 0 }}>
+        <div
+          style={{ position: 'relative', width: '100%', height: '100%', minHeight: 380 }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+        >
+          {stack.length === 0 ? (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 10, padding: 20,
+            }}>
+              <Icon name="heart" size={48} color={t.textDim}/>
+              <div style={{ color: t.textMuted, textAlign: 'center', fontSize: 14, fontWeight: 600 }}>
+                {lang === 'ru' ? 'Все пересмотрели! Загляни позже.' : "You're all caught up! Check back later."}
+              </div>
+            </div>
+          ) : (
+            <>
+              {stack.slice(0, 3).reverse().map((u, idx) => {
+                const isTop = idx === stack.slice(0, 3).length - 1;
+                const stackDepth = stack.slice(0, 3).length - 1 - idx;
+                return (
+                  <div key={u.id} style={{
+                    position: 'absolute', inset: 0,
+                    transform: !isTop ? `scale(${1 - stackDepth * 0.04}) translateY(${stackDepth * 6}px)` : 'none',
+                    opacity: !isTop ? 0.6 : 1,
+                  }}>
+                    <SwipeCard user={u} offset={isTop ? offset : 0} rotation={isTop ? rotation : 0} theme={t} language={lang} top={isTop}/>
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
+        padding: '14px 18px 14px',
+      }}>
+        <ActionBtn icon="rewind" color={t.warn} size={44}/>
+        <ActionBtn icon="close" color={t.nope} size={56} onClick={() => doSwipe('left')}/>
+        <ActionBtn icon="star" color={t.superLike} size={48} glow/>
+        <ActionBtn icon="heart-fill" color={t.like} size={56} onClick={() => doSwipe('right')}/>
+        <ActionBtn icon="bolt" color={t.boost} size={44} glow/>
+      </div>
+
+      {/* Match modal */}
+      {matchedUser && <MatchModal user={matchedUser} theme={t} onClose={() => setMatchedUser(null)} onChat={() => { setMatchedUser(null); onNav('chat', matchedUser); }}/>}
+    </div>
+  );
+}
+
+// ── Match modal
+function MatchModal({ user, theme, onClose, onChat }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 100,
+      background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: 30,
+    }}>
+      {/* Sparkle bg */}
+      <div style={{
+        position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)',
+        width: 300, height: 300, borderRadius: '50%',
+        background: t.grad, opacity: 0.3, filter: 'blur(60px)',
+      }}/>
+
+      <div style={{
+        fontSize: 38, fontWeight: 900, letterSpacing: -1, marginBottom: 6,
+        background: t.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        position: 'relative',
+      }}>
+        {tr('itsAMatch')}
+      </div>
+      <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 14, marginBottom: 28, position: 'relative' }}>
+        {lang === 'ru' ? `Вы с ${user.name} понравились друг другу` : `You and ${user.name} liked each other`}
+      </div>
+
+      {/* Two avatars */}
+      <div style={{ display: 'flex', gap: 14, marginBottom: 32, position: 'relative' }}>
+        <div style={{
+          width: 110, height: 140, borderRadius: 16, overflow: 'hidden',
+          transform: 'rotate(-8deg)', border: '3px solid #fff',
+        }}>
+          <PhotoSlot color={t.p3} color2={t.p2} style={{ width: '100%', height: '100%' }}/>
+        </div>
+        <div style={{
+          width: 110, height: 140, borderRadius: 16, overflow: 'hidden',
+          transform: 'rotate(8deg)', border: '3px solid #fff',
+        }}>
+          <PhotoSlot color={user.color} color2={user.color2} style={{ width: '100%', height: '100%' }}/>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 280, position: 'relative' }}>
+        <GradButton icon="send" onClick={onChat}>{tr('sendMessage')}</GradButton>
+        <button onClick={onClose} style={{
+          padding: 14, borderRadius: 14, border: 'none',
+          background: 'rgba(255,255,255,0.15)', color: '#fff', fontWeight: 700, fontSize: 14,
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}>{lang === 'ru' ? 'Продолжить свайпы' : 'Keep swiping'}</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Matches list
+function MatchesScreen({ theme, onNav, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  return (
+    <div style={{ background: t.bg, minHeight: '100%' }}>
+      <ScreenHeader
+        title={tr('matches')}
+        left={<IconBtn name="arrow-left" onClick={onBack}/>}
+        large theme={t}
+      />
+
+      {/* New matches strip */}
+      <div style={{ padding: '0 18px 16px' }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 }}>
+          {lang === 'ru' ? 'Новые совпадения' : 'New matches'}
+        </div>
+        <div style={{ display: 'flex', gap: 10, overflowX: 'auto' }}>
+          {/* Likes you (premium) */}
+          <div style={{
+            width: 72, height: 96, borderRadius: 14, flexShrink: 0,
+            background: t.grad, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 4,
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <Icon name="bolt" size={20} color="#fff"/>
+            <div style={{ color: '#fff', fontSize: 22, fontWeight: 800 }}>14</div>
+            <div style={{ color: '#fff', fontSize: 9, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', opacity: 0.9 }}>
+              {lang === 'ru' ? 'Лайков' : 'Likes'}
+            </div>
+          </div>
+          {MATCHES.map(m => {
+            const u = DISCOVER_USERS.find(x => x.id === m.userId);
+            if (!u) return null;
+            return (
+              <div key={m.userId} onClick={() => onNav('chat', u)} style={{
+                width: 72, height: 96, borderRadius: 14, flexShrink: 0,
+                position: 'relative', overflow: 'hidden', cursor: 'pointer',
+                border: m.unread ? `2px solid ${t.p2}` : 'none',
+              }}>
+                <PhotoSlot color={u.color} color2={u.color2} style={{ width: '100%', height: '100%' }}/>
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                  background: 'linear-gradient(180deg, transparent, rgba(0,0,0,0.7))',
+                  padding: '12px 6px 6px',
+                  color: '#fff', fontSize: 11, fontWeight: 700,
+                }}>{u.name}</div>
+                {m.unread > 0 && (
+                  <div style={{
+                    position: 'absolute', top: 4, right: 4, minWidth: 18, height: 18,
+                    padding: '0 4px', borderRadius: 9, background: t.p2, color: '#fff',
+                    fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>{m.unread}</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Messages list */}
+      <div style={{ padding: '0 18px' }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 }}>
+          {lang === 'ru' ? 'Сообщения' : 'Messages'}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {MATCHES.map(m => {
+            const u = DISCOVER_USERS.find(x => x.id === m.userId);
+            if (!u) return null;
+            return (
+              <div key={m.userId} onClick={() => onNav('chat', u)} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: 10, borderRadius: 12, cursor: 'pointer',
+              }}>
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <div style={{ width: 54, height: 54, borderRadius: 27, overflow: 'hidden' }}>
+                    <PhotoSlot color={u.color} color2={u.color2} style={{ width: '100%', height: '100%' }}/>
+                  </div>
+                  {m.online && (
+                    <div style={{
+                      position: 'absolute', bottom: 0, right: 0, width: 14, height: 14,
+                      borderRadius: 7, background: '#3DDC97', border: `2px solid ${t.bg}`,
+                    }}/>
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: t.text }}>{u.name}</div>
+                    <div style={{ fontSize: 11, color: t.textDim }}>{lang === 'ru' ? m.matchedAtRu : m.matchedAt}</div>
+                  </div>
+                  <div style={{ fontSize: 13, color: m.unread ? t.text : t.textMuted, fontWeight: m.unread ? 600 : 500, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {lang === 'ru' ? m.lastMsgRu : m.lastMsg}
+                  </div>
+                </div>
+                {m.unread > 0 && (
+                  <div style={{
+                    minWidth: 22, height: 22, padding: '0 6px', borderRadius: 11, background: t.p2,
+                    color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>{m.unread}</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Chat screen
+function ChatScreen({ user, theme, onBack, onNav }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const [msgs, setMsgs] = React.useState(CHAT_THREADS[user.id] || []);
+  const [draft, setDraft] = React.useState('');
+
+  const send = () => {
+    if (!draft.trim()) return;
+    setMsgs(prev => [...prev, { from: 'me', text: draft, textRu: draft, time: 'now' }]);
+    setDraft('');
+  };
+
+  return (
+    <div style={{ background: t.bg, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Chat header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10, padding: '4px 14px 12px',
+        borderBottom: `1px solid ${t.border}`, background: t.surface,
+      }}>
+        <IconBtn name="arrow-left" onClick={onBack}/>
+        <div style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden' }}>
+          <PhotoSlot color={user.color} color2={user.color2} style={{ width: '100%', height: '100%' }}/>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: t.text }}>{user.name}</div>
+          <div style={{ fontSize: 11, color: t.success, fontWeight: 600 }}>{tr('online')}</div>
+        </div>
+        <IconBtn name="dumbbell" color={t.p2} onClick={() => onNav('inviteWorkout', user)}/>
+        <IconBtn name="more"/>
+      </div>
+
+      {/* Messages */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 8px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{
+          textAlign: 'center', fontSize: 11, color: t.textDim, padding: '8px 0',
+          fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5,
+        }}>
+          {tr('matchedOn')} {lang === 'ru' ? 'сегодня' : 'today'} · {user.distance} {lang === 'ru' ? 'км' : 'km'}
+        </div>
+        {msgs.map((m, i) => {
+          const mine = m.from === 'me';
+          return (
+            <div key={i} style={{
+              display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start',
+            }}>
+              <div style={{
+                maxWidth: '72%', padding: '10px 14px', borderRadius: 18,
+                background: mine ? t.grad : t.surface,
+                color: mine ? '#fff' : t.text,
+                border: mine ? 'none' : `1px solid ${t.border}`,
+                fontSize: 14, lineHeight: 1.4,
+                borderBottomRightRadius: mine ? 4 : 18,
+                borderBottomLeftRadius: mine ? 18 : 4,
+              }}>
+                {lang === 'ru' ? m.textRu : m.text}
+                <div style={{ fontSize: 10, opacity: 0.7, marginTop: 4, textAlign: 'right' }}>{m.time}</div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Suggested action */}
+        <div style={{
+          margin: '8px 0', padding: 12, borderRadius: 14,
+          background: t.gradSoft, border: `1px solid ${t.p2}44`,
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <Icon name="dumbbell" size={20} color={t.p2}/>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{tr('suggestWorkout')}</div>
+            <div style={{ fontSize: 11, color: t.textMuted, marginTop: 2 }}>
+              {lang === 'ru' ? 'Назначь совместную тренировку' : 'Schedule a workout together'}
+            </div>
+          </div>
+          <button onClick={() => onNav('inviteWorkout', user)} style={{
+            padding: '6px 12px', borderRadius: 10, border: 'none', background: t.p2,
+            color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
+          }}>{tr('add')}</button>
+        </div>
+      </div>
+
+      {/* Input */}
+      <div style={{ padding: '8px 14px 14px', background: t.surface, borderTop: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <IconBtn name="image" bg={t.chip}/>
+        <input
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && send()}
+          placeholder={tr('typeMessage')}
+          style={{
+            flex: 1, padding: '12px 16px', borderRadius: 22,
+            border: `1px solid ${t.border}`, background: t.bg,
+            color: t.text, fontSize: 14, fontFamily: 'inherit', outline: 'none',
+          }}
+        />
+        <IconBtn name="send" bg={t.grad} color="#fff" onClick={send}/>
+      </div>
+    </div>
+  );
+}
+
+// ── Discover filters screen
+function DiscoverFiltersScreen({ theme, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const [ageRange, setAgeRange] = React.useState([21, 35]);
+  const [maxDistance, setMaxDistance] = React.useState(15);
+  const [goal, setGoal] = React.useState('All');
+  const [level, setLevel] = React.useState('All');
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      <ScreenHeader
+        title={tr('filters')}
+        left={<IconBtn name="arrow-left" onClick={onBack}/>}
+        right={<button style={{ border: 'none', background: 'transparent', color: t.p2, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>Reset</button>}
+        large theme={t}
+      />
+
+      <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+        {/* Distance */}
+        <Card padding={16}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Icon name="location" size={18} color={t.p2}/>
+              <span style={{ fontSize: 14, fontWeight: 700, color: t.text }}>
+                {lang === 'ru' ? 'Расстояние' : 'Distance'}
+              </span>
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 700, color: t.p2 }}>{maxDistance} km</span>
+          </div>
+          <input type="range" min="1" max="50" value={maxDistance} onChange={e => setMaxDistance(+e.target.value)} style={{ width: '100%', accentColor: t.p2 }}/>
+        </Card>
+
+        {/* Age range */}
+        <Card padding={16}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Icon name="user" size={18} color={t.p3}/>
+              <span style={{ fontSize: 14, fontWeight: 700, color: t.text }}>{tr('age')}</span>
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 700, color: t.p3 }}>{ageRange[0]} – {ageRange[1]}</span>
+          </div>
+          <input type="range" min="18" max="65" value={ageRange[1]} onChange={e => setAgeRange([ageRange[0], +e.target.value])} style={{ width: '100%', accentColor: t.p3 }}/>
+        </Card>
+
+        {/* Goal */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 8, paddingLeft: 4 }}>
+            {tr('goal')}
+          </div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['All','Strength','Hypertrophy','Mobility','Calisthenics','CrossFit','Cardio'].map(g => (
+              <Pill key={g} active={goal === g} onClick={() => setGoal(g)} color={t.p1}>{g}</Pill>
+            ))}
+          </div>
+        </div>
+
+        {/* Level */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 8, paddingLeft: 4 }}>
+            {tr('level')}
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {['All','Beginner','Intermediate','Advanced','Elite'].map(l => (
+              <Pill key={l} active={level === l} onClick={() => setLevel(l)} color={t.p2}>{l}</Pill>
+            ))}
+          </div>
+        </div>
+
+        {/* Schedule overlap */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 8, paddingLeft: 4 }}>
+            {lang === 'ru' ? 'График' : 'Schedule overlap'}
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {(lang === 'ru' ? ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'] : ['Mo','Tu','We','Th','Fr','Sa','Su']).map((d, i) => (
+              <Pill key={i} active={i < 5} color={t.p2}>{d}</Pill>
+            ))}
+          </div>
+        </div>
+
+        <GradButton icon="check">{lang === 'ru' ? 'Применить фильтры' : 'Apply filters'}</GradButton>
+      </div>
+    </div>
+  );
+}
+
+// ── Invite to Workout screen
+function InviteWorkoutScreen({ user, theme, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%' }}>
+      <ScreenHeader
+        title={tr('inviteToGym')}
+        left={<button onClick={onBack} style={{ border: 'none', background: 'transparent', color: t.p2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15 }}>{tr('cancel')}</button>}
+        right={<button style={{ border: 'none', background: 'transparent', color: t.p2, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15 }}>{lang === 'ru' ? 'Отправить' : 'Send'}</button>}
+        large theme={t}
+      />
+
+      <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* To */}
+        <Card padding={14}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 22, overflow: 'hidden' }}>
+              <PhotoSlot color={user.color} color2={user.color2} style={{ width: '100%', height: '100%' }}/>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600 }}>{lang === 'ru' ? 'Кому' : 'To'}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: t.text }}>{user.name}, {user.age}</div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Date + Time */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Card padding={14} style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <Icon name="calendar" size={14} color={t.p2}/>
+              <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600, textTransform: 'uppercase' }}>{lang === 'ru' ? 'Дата' : 'Date'}</div>
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: t.text }}>{lang === 'ru' ? 'Завтра' : 'Tomorrow'}</div>
+            <div style={{ fontSize: 11, color: t.textMuted, marginTop: 2 }}>Tue, May 26</div>
+          </Card>
+          <Card padding={14} style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <Icon name="clock" size={14} color={t.p1}/>
+              <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600, textTransform: 'uppercase' }}>{lang === 'ru' ? 'Время' : 'Time'}</div>
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: t.text }}>07:00</div>
+            <div style={{ fontSize: 11, color: t.textMuted, marginTop: 2 }}>1h 30m</div>
+          </Card>
+        </div>
+
+        {/* Gym */}
+        <Card padding={14}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+            <Icon name="location" size={14} color={t.p3}/>
+            <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600, textTransform: 'uppercase' }}>{lang === 'ru' ? 'Зал' : 'Gym'}</div>
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: t.text }}>{user.gym}</div>
+          <div style={{ fontSize: 11, color: t.textMuted, marginTop: 2 }}>{user.distance} km · 4.8 ★</div>
+        </Card>
+
+        {/* Routine */}
+        <Card padding={14}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+            <Icon name="dumbbell" size={14} color={t.p2}/>
+            <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600, textTransform: 'uppercase' }}>{tr('sharedWorkout')}</div>
+          </div>
+          {ROUTINES.slice(0, 2).map(r => (
+            <div key={r.id} style={{
+              display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0',
+              borderTop: `1px solid ${t.border}`,
+            }}>
+              <div style={{ width: 6, height: 24, borderRadius: 3, background: r.color }}/>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: t.text }}>
+                  {lang === 'ru' ? r.nameRu : r.name}
+                </div>
+                <div style={{ fontSize: 11, color: t.textMuted }}>{r.sets} sets · {r.duration}m</div>
+              </div>
+              <div style={{ width: 22, height: 22, borderRadius: 11, border: `2px solid ${r.id === 'r1' ? t.p2 : t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: r.id === 'r1' ? t.p2 : 'transparent' }}>
+                {r.id === 'r1' && <Icon name="check" size={12} color="#fff"/>}
+              </div>
+            </div>
+          ))}
+        </Card>
+
+        <GradButton icon="send">{lang === 'ru' ? 'Отправить приглашение' : 'Send invite'}</GradButton>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { DiscoverScreen, MatchesScreen, ChatScreen, DiscoverFiltersScreen, InviteWorkoutScreen, MatchModal });
+
+// ═══ screens-profile.jsx ═══
+// screens-profile.jsx — Profile, Settings, Edit Profile, Calendar, Nutrition, Friends, Ranks
+
+function ProfileScreen({ theme, onNav }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+
+  const widgets = [
+    { id: 'medals', icon: 'medal', label: tr('medals'), color: t.warn, nav: 'medals' },
+    { id: 'ranks', icon: 'trophy', label: tr('ranks'), color: t.p3, nav: 'ranks' },
+    { id: 'cal', icon: 'calendar', label: tr('calendar'), color: t.p2, nav: 'calendar' },
+    { id: 'nutr', icon: 'apple', label: tr('nutrition'), color: t.p1, nav: 'nutrition' },
+    { id: 'stats', icon: 'chart', label: tr('stats'), color: t.danger, nav: 'stats' },
+    { id: 'edit', icon: 'edit', label: tr('editProfile'), color: t.p2, nav: 'editProfile' },
+  ];
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      {/* Header */}
+      <div style={{ padding: '4px 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Avatar name={ME.name} size={42} color={t.p3} color2={t.p2}/>
+          <div>
+            <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600 }}>Lv.{ME.level}</div>
+            <div style={{ width: 88, height: 4, background: t.chip, borderRadius: 2, marginTop: 2 }}>
+              <div style={{ width: '74%', height: '100%', background: t.grad, borderRadius: 2 }}/>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 10px', background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12 }}>
+            <Icon name="flame" size={14} color={t.danger}/>
+            <span style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{ME.streak}</span>
+          </div>
+          <IconBtn name="cog" onClick={() => onNav('settings')}/>
+        </div>
+      </div>
+
+      {/* Profile hero */}
+      <div style={{ padding: '0 18px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ position: 'relative', marginBottom: 12 }}>
+          <div style={{ width: 110, height: 110, borderRadius: 55, overflow: 'hidden', border: `4px solid ${t.surface}`, boxShadow: `0 0 0 3px ${t.p2}` }}>
+            <PhotoSlot color={t.p3} color2={t.p2} style={{ width: '100%', height: '100%' }} label="your photo"/>
+          </div>
+          <div style={{
+            position: 'absolute', bottom: 0, right: 0,
+            width: 32, height: 32, borderRadius: 16, background: t.grad,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: `3px solid ${t.bg}`,
+          }}>
+            <Icon name="camera" size={14} color="#fff"/>
+          </div>
+        </div>
+        <div style={{ fontSize: 22, fontWeight: 800, color: t.text }}>{ME.name}</div>
+        <div style={{ fontSize: 13, color: t.textMuted, marginTop: 2 }}>{ME.username}</div>
+
+        {/* Level + XP */}
+        <Card padding={14} style={{ marginTop: 16, width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{
+              width: 56, height: 56, position: 'relative',
+            }}>
+              <svg viewBox="0 0 56 56" style={{ position: 'absolute', inset: 0 }}>
+                <polygon points="28,4 50,18 50,38 28,52 6,38 6,18"
+                  fill="none" stroke={t.border} strokeWidth="3"/>
+                <polygon points="28,4 50,18 50,38 28,52 6,38 6,18"
+                  fill="none" stroke="url(#hxg)" strokeWidth="3"
+                  strokeDasharray="200" strokeDashoffset="52" strokeLinejoin="round"/>
+                <defs>
+                  <linearGradient id="hxg" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stopColor={t.p3}/>
+                    <stop offset="0.5" stopColor={t.p2}/>
+                    <stop offset="1" stopColor={t.p1}/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: t.text }}>{ME.level}</div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: t.text }}>{ME.xp} / {ME.xpToNext} XP</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: t.p2 }}>Lv.{ME.level + 1}</span>
+              </div>
+              <ProgressBar value={ME.xp} max={ME.xpToNext} height={8}/>
+              <div style={{ fontSize: 11, color: t.textDim, marginTop: 6 }}>
+                <Icon name="spark" size={10} color={t.p2}/> {ME.totalXp.toLocaleString()} {lang === 'ru' ? 'всего XP' : 'total XP'}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Widgets grid */}
+      <div style={{ padding: '0 18px' }}>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10,
+        }}>
+          {widgets.map(w => (
+            <button key={w.id} onClick={() => onNav(w.nav)} style={{
+              background: t.surface, border: `1px solid ${t.border}`,
+              borderRadius: 14, padding: 14, cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              fontFamily: 'inherit',
+            }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 12,
+                background: `linear-gradient(135deg, ${w.color}, ${w.color}99)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: `0 6px 14px ${w.color}33`,
+              }}>
+                <Icon name={w.icon} size={22} color="#fff"/>
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: t.text }}>{w.label}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Calendar mini */}
+      <SectionHeader title={tr('calendar')} action={lang === 'ru' ? 'Все →' : 'View all →'} onAction={() => onNav('calendar')} theme={t}/>
+      <div style={{ padding: '0 18px' }}>
+        <Card padding={14}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 6 }}>
+            {(lang === 'ru' ? ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'] : ['Mo','Tu','We','Th','Fr','Sa','Su']).map((d, i) => (
+              <div key={i} style={{ textAlign: 'center', fontSize: 10, color: t.textDim, fontWeight: 700 }}>{d}</div>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+            {[18, 19, 20, 21, 22, 23, 24].map(d => {
+              const w = WORKOUT_HISTORY[d];
+              const today = d === 24;
+              return (
+                <div key={d} style={{
+                  aspectRatio: '1', borderRadius: 8,
+                  background: w ? t.gradSoft : 'transparent',
+                  border: today ? `2px solid ${t.p2}` : `1px solid ${t.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative',
+                }}>
+                  <span style={{ fontSize: 12, color: today ? t.p2 : (w ? t.text : t.textDim), fontWeight: today ? 800 : 600 }}>{d}</span>
+                  {w && <div style={{ position: 'absolute', bottom: 3, width: 4, height: 4, borderRadius: 2, background: t.p2 }}/>}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ── Settings
+function SettingsScreen({ theme, onBack, onNav, onToggleTheme, onChangeLang }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+
+  const Row = ({ icon, label, value, danger, color, onClick, last }) => (
+    <button onClick={onClick} style={{
+      display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
+      background: 'transparent', border: 'none', width: '100%',
+      borderBottom: last ? 'none' : `1px solid ${t.border}`,
+      cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+    }}>
+      <div style={{
+        width: 32, height: 32, borderRadius: 8, background: (color || t.p2) + '22',
+        color: color || t.p2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <Icon name={icon} size={18}/>
+      </div>
+      <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: danger ? t.danger : t.text }}>{label}</div>
+      {value && <div style={{ fontSize: 13, color: t.textMuted, fontWeight: 600 }}>{value}</div>}
+      {!danger && <Icon name="chevron-right" size={16} color={t.textDim}/>}
+    </button>
+  );
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 30 }}>
+      <ScreenHeader
+        title={tr('settings')}
+        left={<IconBtn name="arrow-left" onClick={onBack}/>}
+        large theme={t}
+      />
+
+      {/* Pro banner */}
+      <div style={{ padding: '0 18px 16px' }}>
+        <div style={{
+          padding: 16, borderRadius: 16, background: t.grad, color: '#fff',
+          display: 'flex', alignItems: 'center', gap: 12, position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{
+            position: 'absolute', right: -20, top: -20, width: 100, height: 100,
+            borderRadius: '50%', background: 'rgba(255,255,255,0.1)',
+          }}/>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon name="spark" size={22} color="#fff"/>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>GymBuddy Pro</div>
+            <div style={{ fontSize: 12, opacity: 0.9 }}>{lang === 'ru' ? 'Безлимит свайпов, бусты, аналитика' : 'Unlimited swipes, boosts, analytics'}</div>
+          </div>
+          <Icon name="chevron-right" size={18} color="#fff"/>
+        </div>
+      </div>
+
+      {/* Section: Preferences */}
+      <div style={{ padding: '0 18px 6px', fontSize: 11, fontWeight: 700, color: t.textDim, letterSpacing: 1, textTransform: 'uppercase' }}>
+        {lang === 'ru' ? 'Настройки' : 'Preferences'}
+      </div>
+      <div style={{ padding: '0 18px' }}>
+        <div style={{ background: t.surface, borderRadius: 14, border: `1px solid ${t.border}`, overflow: 'hidden' }}>
+          {/* Theme toggle row */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
+            borderBottom: `1px solid ${t.border}`,
+          }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: t.warn + '22', color: t.warn, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name={t.mode === 'dark' ? 'moon' : 'sun'} size={18}/>
+            </div>
+            <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: t.text }}>{tr('appearance')}</div>
+            <Switch value={t.mode === 'dark'} onChange={onToggleTheme}/>
+          </div>
+          {/* Lang */}
+          <Row icon="language" label={tr('language')} value={lang === 'ru' ? 'Русский' : 'English'} color={t.p2} onClick={onChangeLang}/>
+          <Row icon="dumbbell" label={tr('units')} value="kg / cm" color={t.p1}/>
+          <Row icon="bell" label={tr('notifications')} value={lang === 'ru' ? 'Включены' : 'On'} color={t.warn}/>
+          <Row icon="chart" label={lang === 'ru' ? 'Аналитика' : 'Analytics'} color={t.p3}/>
+          <Row icon="calendar" label={tr('calendar')} color={t.p2}/>
+          <Row icon="cog" label={lang === 'ru' ? 'Другие настройки' : 'Other'} color={t.textMuted} last/>
+        </div>
+      </div>
+
+      {/* Section: Account */}
+      <div style={{ padding: '20px 18px 6px', fontSize: 11, fontWeight: 700, color: t.textDim, letterSpacing: 1, textTransform: 'uppercase' }}>
+        {lang === 'ru' ? 'Аккаунт' : 'Account'}
+      </div>
+      <div style={{ padding: '0 18px' }}>
+        <div style={{ background: t.surface, borderRadius: 14, border: `1px solid ${t.border}`, overflow: 'hidden' }}>
+          <Row icon="user" label={lang === 'ru' ? 'Профиль' : 'Profile'} color={t.p2} onClick={() => onNav('editProfile')}/>
+          <Row icon="medal" label={tr('achievements')} color={t.warn}/>
+          <Row icon="users" label={lang === 'ru' ? 'Реферальная программа' : 'Referrals'} color={t.p1}/>
+          <Row icon="trophy" label={tr('stats')} color={t.danger} last/>
+        </div>
+      </div>
+
+      {/* Section: Legal */}
+      <div style={{ padding: '20px 18px 6px', fontSize: 11, fontWeight: 700, color: t.textDim, letterSpacing: 1, textTransform: 'uppercase' }}>
+        {lang === 'ru' ? 'Документы' : 'Legal'}
+      </div>
+      <div style={{ padding: '0 18px' }}>
+        <div style={{ background: t.surface, borderRadius: 14, border: `1px solid ${t.border}`, overflow: 'hidden' }}>
+          <Row icon="list" label={tr('privacy')} color={t.textMuted}/>
+          <Row icon="list" label={tr('terms')} color={t.textMuted} last/>
+        </div>
+      </div>
+
+      {/* Logout */}
+      <div style={{ padding: '24px 18px 0', display: 'flex', justifyContent: 'center' }}>
+        <button style={{
+          background: 'transparent', border: 'none', color: t.danger,
+          fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+          padding: '10px 20px',
+        }}>{tr('logout')}</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Edit profile
+function EditProfileScreen({ theme, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const [name, setName] = React.useState(ME.name);
+  const [age, setAge] = React.useState(ME.age);
+  const [height, setHeight] = React.useState(ME.height);
+  const [weight, setWeight] = React.useState(ME.weight);
+  const [bio, setBio] = React.useState(lang === 'ru' ? ME.bioRu : ME.bio);
+
+  const Field = ({ label, children }) => (
+    <div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6, paddingLeft: 4 }}>{label}</div>
+      {children}
+    </div>
+  );
+
+  const inputStyle = {
+    width: '100%', padding: '14px 16px', borderRadius: 12,
+    border: `1px solid ${t.border}`, background: t.surface,
+    color: t.text, fontSize: 15, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+  };
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      <ScreenHeader
+        title={tr('editProfile')}
+        left={<button onClick={onBack} style={{ border: 'none', background: 'transparent', color: t.p2, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15 }}>{tr('cancel')}</button>}
+        right={<button onClick={onBack} style={{ border: 'none', background: 'transparent', color: t.p2, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 15 }}>{tr('save')}</button>}
+        large theme={t}
+      />
+
+      {/* Photo grid */}
+      <div style={{ padding: '0 18px 18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+          {[0, 1, 2, 3, 4, 5].map(i => (
+            <div key={i} style={{
+              aspectRatio: '3/4', borderRadius: 12, overflow: 'hidden', position: 'relative',
+              border: `1px solid ${t.border}`,
+            }}>
+              {i < 2 ? (
+                <PhotoSlot color={t.p3} color2={t.p2} style={{ width: '100%', height: '100%' }} label={`photo ${i+1}`}/>
+              ) : (
+                <div style={{
+                  width: '100%', height: '100%', background: t.surface,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: `1px dashed ${t.borderStrong}`,
+                }}>
+                  <Icon name="plus" size={20} color={t.textDim}/>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <Field label={tr('name')}>
+          <input value={name} onChange={e => setName(e.target.value)} style={inputStyle}/>
+        </Field>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Field label={tr('age')}>
+            <input value={age} onChange={e => setAge(e.target.value)} style={inputStyle} type="number"/>
+          </Field>
+          <Field label={`${tr('height')} (cm)`}>
+            <input value={height} onChange={e => setHeight(e.target.value)} style={inputStyle} type="number"/>
+          </Field>
+          <Field label={`${tr('weightLabel')} (kg)`}>
+            <input value={weight} onChange={e => setWeight(e.target.value)} style={inputStyle} type="number"/>
+          </Field>
+        </div>
+
+        <Field label={tr('bio')}>
+          <textarea value={bio} onChange={e => setBio(e.target.value)} style={{ ...inputStyle, minHeight: 80, resize: 'none' }}/>
+        </Field>
+
+        <Field label={tr('goal')}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['Strength','Hypertrophy','Mobility','Calisthenics','CrossFit'].map(g => (
+              <Pill key={g} active={g === 'Hypertrophy'} color={t.p2}>{g}</Pill>
+            ))}
+          </div>
+        </Field>
+
+        <Field label={lang === 'ru' ? 'Интересы' : 'Interests'}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['Powerlifting','Bodybuilding','Calisthenics','Running','Yoga','CrossFit','HIIT'].map((it, i) => (
+              <Pill key={it} active={i < 3} color={t.p3}>{it}</Pill>
+            ))}
+          </div>
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+// ── Calendar (full screen)
+function CalendarScreen({ theme, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const days = lang === 'ru' ? ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'] : ['Mo','Tu','We','Th','Fr','Sa','Su'];
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      <ScreenHeader
+        title={tr('calendar')}
+        left={<IconBtn name="arrow-left" onClick={onBack}/>}
+        right={<IconBtn name="plus" bg={t.grad} color="#fff"/>}
+        large theme={t}
+      />
+
+      {/* Month switcher */}
+      <div style={{ padding: '0 18px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 17, fontWeight: 700, color: t.text }}>{lang === 'ru' ? 'Май 2026' : 'May 2026'}</div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <IconBtn name="chevron-left" size={32} iconSize={16}/>
+          <IconBtn name="chevron-right" size={32} iconSize={16}/>
+        </div>
+      </div>
+
+      <div style={{ padding: '0 18px' }}>
+        <Card padding={12}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 6 }}>
+            {days.map((d, i) => (
+              <div key={i} style={{ textAlign: 'center', fontSize: 10, color: t.textDim, fontWeight: 700, padding: '4px 0' }}>{d}</div>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+            {Array.from({ length: 35 }).map((_, idx) => {
+              const day = idx - 3; // Start offset
+              if (day < 1 || day > 31) return <div key={idx} style={{ aspectRatio: '1' }}/>;
+              const w = WORKOUT_HISTORY[day];
+              const today = day === 24;
+              return (
+                <div key={idx} style={{
+                  aspectRatio: '1', borderRadius: 8,
+                  background: w ? t.gradSoft : 'transparent',
+                  border: today ? `2px solid ${t.p2}` : `1px solid ${t.border}`,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative', gap: 2,
+                }}>
+                  <span style={{ fontSize: 13, color: today ? t.p2 : (w ? t.text : t.textDim), fontWeight: today ? 800 : 600 }}>{day}</span>
+                  {w && (
+                    <div style={{ display: 'flex', gap: 2 }}>
+                      {w.muscles.slice(0, 3).map((m, i) => (
+                        <div key={i} style={{ width: 4, height: 4, borderRadius: 2, background: t.p2 }}/>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      </div>
+
+      {/* Upcoming workouts */}
+      <SectionHeader title={lang === 'ru' ? 'Предстоящие' : 'Upcoming'} theme={t}/>
+      <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[
+          { date: lang === 'ru' ? 'Сегодня · 18:00' : 'Today · 6 PM', name: lang === 'ru' ? 'Верх тела' : 'Upper body', color: t.p3 },
+          { date: lang === 'ru' ? 'Завтра · 07:00' : 'Tomorrow · 7 AM', name: lang === 'ru' ? 'Ноги (с Alina)' : 'Legs (with Alina)', color: t.danger },
+          { date: lang === 'ru' ? 'Чт · 19:00' : 'Thu · 7 PM', name: lang === 'ru' ? 'Тяги' : 'Pull day', color: t.p2 },
+        ].map((w, i) => (
+          <Card key={i} padding={14}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 6, height: 36, borderRadius: 3, background: w.color }}/>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: t.textMuted, fontWeight: 600 }}>{w.date}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: t.text, marginTop: 2 }}>{w.name}</div>
+              </div>
+              <IconBtn name="play" size={32} iconSize={14} bg={w.color} color="#fff"/>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Nutrition
+function NutritionScreen({ theme, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const macros = [
+    { key: 'protein', label: tr('protein'), val: 142, max: 180, color: t.danger },
+    { key: 'carbs', label: tr('carbs'), val: 220, max: 280, color: t.warn },
+    { key: 'fats', label: tr('fats'), val: 58, max: 72, color: t.p2 },
+  ];
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      <ScreenHeader
+        title={tr('nutrition')}
+        left={<IconBtn name="arrow-left" onClick={onBack}/>}
+        right={<IconBtn name="plus" bg={t.grad} color="#fff"/>}
+        large theme={t}
+      />
+
+      {/* Calories ring */}
+      <div style={{ padding: '0 18px 16px' }}>
+        <Card padding={20} style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ width: 100, height: 100, position: 'relative' }}>
+            <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0 }}>
+              <circle cx="50" cy="50" r="42" fill="none" stroke={t.chip} strokeWidth="10"/>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="url(#cgrad)" strokeWidth="10"
+                strokeDasharray="264" strokeDashoffset="60" strokeLinecap="round" transform="rotate(-90 50 50)"/>
+              <defs>
+                <linearGradient id="cgrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stopColor={t.p3}/>
+                  <stop offset="1" stopColor={t.p1}/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: t.text }}>1820</div>
+              <div style={{ fontSize: 10, color: t.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>kcal</div>
+            </div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{tr('calories')}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: t.text }}>1820 / 2400</div>
+            <div style={{ fontSize: 12, color: t.textMuted, marginTop: 2 }}>
+              580 {lang === 'ru' ? 'осталось' : 'remaining'}
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Macros */}
+      <div style={{ padding: '0 18px 16px', display: 'flex', gap: 10 }}>
+        {macros.map(m => (
+          <div key={m.key} style={{
+            flex: 1, padding: 12, borderRadius: 14,
+            background: t.surface, border: `1px solid ${t.border}`,
+          }}>
+            <div style={{ fontSize: 11, color: t.textDim, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 }}>{m.label}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: t.text, marginTop: 4 }}>{m.val}<span style={{ fontSize: 11, color: t.textMuted, fontWeight: 600 }}>g</span></div>
+            <ProgressBar value={m.val} max={m.max} height={4} color={m.color} style={{ marginTop: 6 }}/>
+            <div style={{ fontSize: 10, color: t.textDim, marginTop: 4 }}>/{m.max}g</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Meals */}
+      <SectionHeader title={lang === 'ru' ? 'Приёмы пищи' : 'Meals'} theme={t}/>
+      <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[
+          { meal: tr('breakfast'), kcal: 520, items: ['Oats', '2× eggs', 'Banana'], time: '08:00', emoji: '🥣' },
+          { meal: tr('lunch'), kcal: 680, items: ['Chicken', 'Rice', 'Salad'], time: '13:00', emoji: '🥗' },
+          { meal: tr('snack'), kcal: 220, items: ['Protein shake', 'Apple'], time: '16:30', emoji: '🍎' },
+          { meal: tr('dinner'), kcal: 400, items: lang === 'ru' ? ['—'] : ['—'], time: '19:30', empty: true, emoji: '🍽️' },
+        ].map((m, i) => (
+          <div key={i} style={{
+            display: 'flex', alignItems: 'center', gap: 12, padding: 14,
+            background: t.surface, border: `1px solid ${t.border}`, borderRadius: 14,
+            opacity: m.empty ? 0.6 : 1,
+          }}>
+            <div style={{ fontSize: 28 }}>{m.emoji}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: t.text }}>{m.meal}</div>
+                <div style={{ fontSize: 11, color: t.textDim }}>{m.time}</div>
+              </div>
+              <div style={{ fontSize: 12, color: t.textMuted, marginTop: 2 }}>
+                {m.items.join(' · ')}
+              </div>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: m.empty ? t.textDim : t.text }}>{m.kcal} kcal</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Friends
+function FriendsScreen({ theme, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  const [tab, setTab] = React.useState('friends');
+
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      <ScreenHeader
+        title={tr('friends')}
+        left={null}
+        right={<IconBtn name="plus" bg={t.grad} color="#fff"/>}
+        large theme={t}
+      />
+
+      {/* Tabs */}
+      <div style={{ padding: '0 18px 14px' }}>
+        <TabPills active={tab} onChange={setTab} theme={t} tabs={[
+          { key: 'friends', label: tr('friends') },
+          { key: 'requests', label: tr('requests') },
+          { key: 'lb', label: tr('leaderboard') },
+        ]}/>
+      </div>
+
+      {tab === 'friends' && (
+        <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* Online section */}
+          <div style={{ fontSize: 11, fontWeight: 700, color: t.textDim, letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 4, marginBottom: 4 }}>
+            {tr('online')} · {FRIENDS.filter(f => f.online).length}
+          </div>
+          {FRIENDS.map(f => (
+            <div key={f.id} style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: 12,
+              background: t.surface, border: `1px solid ${t.border}`, borderRadius: 14,
+            }}>
+              <div style={{ position: 'relative' }}>
+                <Avatar name={f.name} size={48} color={f.color} color2={f.color}/>
+                {f.online && <div style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: 6, background: t.success, border: `2px solid ${t.surface}` }}/>}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: t.text }}>{f.name}</div>
+                <div style={{ fontSize: 11, color: t.textMuted, marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>Lv.{f.level}</span>
+                  <span>·</span>
+                  <Icon name="flame" size={10} color={t.danger}/>
+                  <span>{f.streak}</span>
+                  <span>·</span>
+                  <span>{f.last}</span>
+                </div>
+              </div>
+              <IconBtn name="send" size={32} iconSize={14}/>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'lb' && (
+        <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* Top 3 podium */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 10, padding: '14px 0 18px' }}>
+            {[1, 0, 2].map(idx => {
+              const u = LEADERBOARD[idx];
+              const height = idx === 0 ? 110 : idx === 1 ? 90 : 80;
+              return (
+                <div key={u.rank} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                  <Avatar name={u.name} size={56} color={u.color} color2={u.color}/>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: t.text }}>{u.name}</div>
+                  <div style={{
+                    width: 70, height, borderRadius: '10px 10px 0 0',
+                    background: `linear-gradient(180deg, ${u.color}, ${u.color}88)`,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
+                    padding: 8, color: '#fff',
+                  }}>
+                    <div style={{ fontSize: 22, fontWeight: 900 }}>{u.rank}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.9 }}>{(u.xp / 1000).toFixed(0)}k XP</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {/* Rest */}
+          {LEADERBOARD.slice(3).map(u => (
+            <div key={u.rank} style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: 12,
+              background: u.isMe ? t.gradSoft : t.surface,
+              border: `1px solid ${u.isMe ? t.p2 : t.border}`, borderRadius: 14,
+            }}>
+              <div style={{ width: 28, fontSize: 14, fontWeight: 800, color: t.textMuted, textAlign: 'center' }}>{u.rank}</div>
+              <Avatar name={u.name} size={36} color={u.color} color2={u.color}/>
+              <div style={{ flex: 1, fontSize: 14, fontWeight: 700, color: t.text }}>{u.name}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: t.p2 }}>{u.xp.toLocaleString()}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'requests' && (
+        <div style={{ padding: '0 18px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 200, gap: 8 }}>
+          <Icon name="users" size={42} color={t.textDim}/>
+          <div style={{ color: t.textMuted, fontSize: 14, fontWeight: 600 }}>
+            {lang === 'ru' ? 'Нет новых заявок' : 'No new requests'}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Medals
+function MedalsScreen({ theme, onBack }) {
+  const t = theme;
+  const { t: tr, lang } = useI18n();
+  return (
+    <div style={{ background: t.bgGrad, minHeight: '100%', paddingBottom: 24 }}>
+      <ScreenHeader
+        title={tr('medals')}
+        left={<IconBtn name="arrow-left" onClick={onBack}/>}
+        large theme={t}
+      />
+
+      <div style={{ padding: '0 18px 14px', display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ fontSize: 38, fontWeight: 900, color: t.text, lineHeight: 1 }}>{MEDALS.filter(m => m.unlocked).length}<span style={{ fontSize: 18, color: t.textDim }}>/{MEDALS.length}</span></div>
+        <div style={{ flex: 1 }}>
+          <ProgressBar value={MEDALS.filter(m => m.unlocked).length} max={MEDALS.length} height={8}/>
+          <div style={{ fontSize: 11, color: t.textMuted, marginTop: 6 }}>
+            {lang === 'ru' ? 'Разблокировано медалей' : 'Medals unlocked'}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: '0 18px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+        {MEDALS.map(m => (
+          <Card key={m.id} padding={16}>
+            <div style={{
+              width: 60, height: 60, borderRadius: 30, margin: '0 auto 10px',
+              background: m.unlocked ? t.grad : t.chip,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 30, filter: m.unlocked ? 'none' : 'grayscale(1)',
+              boxShadow: m.unlocked ? `0 8px 18px ${t.p2}33` : 'none',
+            }}>{m.icon}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: m.unlocked ? t.text : t.textDim, textAlign: 'center', lineHeight: 1.3 }}>
+              {lang === 'ru' ? m.nameRu : m.name}
+            </div>
+            {!m.unlocked && <div style={{ fontSize: 10, color: t.textDim, textAlign: 'center', marginTop: 4 }}>🔒</div>}
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Ranks (Leaderboards detail)
+function RanksScreen({ theme, onBack }) {
+  return <FriendsScreen theme={theme} onBack={onBack}/>; // share LB
+}
+
+Object.assign(window, { ProfileScreen, SettingsScreen, EditProfileScreen, CalendarScreen, NutritionScreen, FriendsScreen, MedalsScreen, RanksScreen });
+
+// ═══ app.jsx ═══
+// app.jsx — App router + dual-frame canvas
+
+// Global state — shared between iOS and Android frames
+const AppCtx = React.createContext(null);
+
+function AppProvider({ children }) {
+  const [tab, setTab] = React.useState('discover'); // start on the headline feature
+  const [stack, setStack] = React.useState([]); // route stack
+  const [chatUser, setChatUser] = React.useState(null);
+
+  const nav = React.useCallback((route, data) => {
+    if (route === 'chat') {
+      setChatUser(data);
+      setStack(s => [...s, { route: 'chat', data }]);
+    } else if (route === 'inviteWorkout') {
+      setStack(s => [...s, { route: 'inviteWorkout', data }]);
+    } else {
+      setStack(s => [...s, { route, data }]);
+    }
+  }, []);
+
+  const back = React.useCallback(() => setStack(s => s.slice(0, -1)), []);
+
+  const value = { tab, setTab, stack, nav, back, chatUser };
+  return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
+}
+
+const useApp = () => React.useContext(AppCtx);
+
+// ── Phone content (renders the current tab + stacked modals)
+function PhoneContent({ mode, hideBottomNav }) {
+  const theme = useTheme();
+  const app = useApp();
+  const current = app.stack[app.stack.length - 1];
+
+  // Render bottom-most stack screen if there is one
+  let content;
+  if (current) {
+    const { route, data } = current;
+    switch (route) {
+      case 'settings': content = <SettingsScreen theme={theme} onBack={app.back} onNav={app.nav}/>; break;
+      case 'editProfile': content = <EditProfileScreen theme={theme} onBack={app.back}/>; break;
+      case 'calendar': content = <CalendarScreen theme={theme} onBack={app.back}/>; break;
+      case 'nutrition': content = <NutritionScreen theme={theme} onBack={app.back}/>; break;
+      case 'medals': content = <MedalsScreen theme={theme} onBack={app.back}/>; break;
+      case 'ranks': content = <RanksScreen theme={theme} onBack={app.back}/>; break;
+      case 'stats': content = <RanksScreen theme={theme} onBack={app.back}/>; break;
+      case 'matches': content = <MatchesScreen theme={theme} onBack={app.back} onNav={app.nav}/>; break;
+      case 'chat': content = <ChatScreen user={data} theme={theme} onBack={app.back} onNav={app.nav}/>; break;
+      case 'discoverFilters': content = <DiscoverFiltersScreen theme={theme} onBack={app.back}/>; break;
+      case 'inviteWorkout': content = <InviteWorkoutScreen user={data} theme={theme} onBack={app.back}/>; break;
+      case 'exercises': content = <ExercisesScreen theme={theme} onBack={app.back} onNav={app.nav}/>; break;
+      case 'createExercise': content = <CreateExerciseScreen theme={theme} onBack={app.back}/>; break;
+      case 'activeWorkout': content = <ActiveWorkoutScreen theme={theme} onBack={app.back}/>; break;
+      default: content = null;
+    }
+  }
+
+  if (!content) {
+    switch (app.tab) {
+      case 'home': content = <HomeScreen theme={theme} onNav={app.nav}/>; break;
+      case 'workout': content = <WorkoutTrackerScreen theme={theme} onNav={app.nav}/>; break;
+      case 'discover': content = <DiscoverScreen theme={theme} onNav={app.nav}/>; break;
+      case 'friends': content = <FriendsScreen theme={theme}/>; break;
+      case 'profile': content = <ProfileScreen theme={theme} onNav={app.nav}/>; break;
+      default: content = <HomeScreen theme={theme} onNav={app.nav}/>;
+    }
+  }
+
+  // Tabs that should hide bottom nav
+  const inStack = app.stack.length > 0;
+  const hide = hideBottomNav || inStack;
+
+  return (
+    <div style={{
+      width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
+      background: theme.bg, color: theme.text, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, system-ui, sans-serif',
+      WebkitFontSmoothing: 'antialiased',
+      paddingTop: mode === 'ios' ? 54 : 32, // safe area for status bar
+    }}>
+      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minHeight: 0 }}>
+        {content}
+      </div>
+      {!hide && <BottomNav tab={app.tab} onTab={app.setTab} theme={theme} mode={mode}/>}
+    </div>
+  );
+}
+
+// ── Status bar overlay slot for phone shells
+function PhoneShell({ kind, children, dark }) {
+  // Place status bar manually; we want our own paddingTop
+  const statusBarH = kind === 'ios' ? 50 : 36;
+  return (
+    <div style={{
+      position: 'relative', width: '100%', height: '100%',
+      paddingTop: statusBarH, paddingBottom: kind === 'ios' ? 34 : 18,
+      boxSizing: 'border-box',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// ── Top toolbar — theme/lang/tweaks
+function Toolbar({ mode, setMode, lang, setLang, accent, setAccent }) {
+  return (
+    <div style={{
+      position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)',
+      display: 'flex', alignItems: 'center', gap: 8, zIndex: 100,
+      padding: '8px 12px', borderRadius: 999,
+      background: mode === 'dark' ? 'rgba(20,26,43,0.85)' : 'rgba(255,255,255,0.9)',
+      backdropFilter: 'blur(20px)',
+      border: `1px solid ${mode === 'dark' ? '#262E47' : '#E4E8F0'}`,
+      boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+    }}>
+      {/* Title */}
+      <div style={{
+        fontSize: 13, fontWeight: 800, padding: '4px 10px',
+        background: ACCENT_PALETTES[accent].grad,
+        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        fontFamily: '-apple-system, system-ui, sans-serif', letterSpacing: -0.3,
+      }}>GymBuddy</div>
+
+      <div style={{ width: 1, height: 18, background: mode === 'dark' ? '#39426A' : '#D2D8E3' }}/>
+
+      {/* Theme toggle */}
+      <button onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')} style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '6px 10px', borderRadius: 999, border: 'none', cursor: 'pointer',
+        background: 'transparent', color: mode === 'dark' ? '#fff' : '#0B1020',
+        fontWeight: 600, fontSize: 12, fontFamily: 'inherit',
+      }}>
+        <Icon name={mode === 'dark' ? 'moon' : 'sun'} size={14}/>
+        {mode === 'dark' ? 'Dark' : 'Light'}
+      </button>
+
+      {/* Lang toggle */}
+      <button onClick={() => setLang(lang === 'ru' ? 'en' : 'ru')} style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '6px 10px', borderRadius: 999, border: 'none', cursor: 'pointer',
+        background: 'transparent', color: mode === 'dark' ? '#fff' : '#0B1020',
+        fontWeight: 600, fontSize: 12, fontFamily: 'inherit',
+      }}>
+        <Icon name="globe" size={14}/>
+        {lang === 'ru' ? 'RU' : 'EN'}
+      </button>
+    </div>
+  );
+}
+
+// ── Root component: dual frames side-by-side
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "mode": "dark",
+  "accent": "aurora",
+  "lang": "en"
+}/*EDITMODE-END*/;
+
+function Root() {
+  const [tk, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const { mode, accent, lang } = tk;
+
+  return (
+    <ThemeProvider mode={mode} accent={accent}>
+      <I18nProvider lang={lang}>
+        <AppProvider>
+          <div style={{
+            minHeight: '100vh', width: '100%',
+            background: mode === 'dark'
+              ? 'radial-gradient(120% 80% at 50% -10%, #1a1f36 0%, #04060d 60%)'
+              : 'linear-gradient(180deg, #F0F3FA 0%, #DCE3F0 100%)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: '90px 24px 60px', gap: 30, boxSizing: 'border-box',
+          }}>
+            <Toolbar mode={mode} setMode={(v) => setTweak('mode', v)} lang={lang} setLang={(v) => setTweak('lang', v)} accent={accent} setAccent={(v) => setTweak('accent', v)}/>
+
+            {/* Frames */}
+            <div style={{ display: 'flex', gap: 50, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+              {/* iOS */}
+              <div data-screen-label="iOS Frame" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: mode === 'dark' ? '#A2ABC5' : '#5B6478', letterSpacing: 2, textTransform: 'uppercase' }}>iOS</div>
+                <IOSDevice width={380} height={780} dark={mode === 'dark'}>
+                  <PhoneContent mode="ios"/>
+                </IOSDevice>
+              </div>
+
+              {/* Android */}
+              <div data-screen-label="Android Frame" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: mode === 'dark' ? '#A2ABC5' : '#5B6478', letterSpacing: 2, textTransform: 'uppercase' }}>Android</div>
+                <AndroidDevice width={380} height={780} dark={mode === 'dark'}>
+                  <PhoneContent mode="android"/>
+                </AndroidDevice>
+              </div>
+            </div>
+
+            <TweaksPanel title="Tweaks">
+              <TweakSection label="Theme">
+                <TweakRadio
+                  label="Mode" value={mode}
+                  onChange={(v) => setTweak('mode', v)}
+                  options={[{value:'light',label:'Light'},{value:'dark',label:'Dark'}]}
+                />
+              </TweakSection>
+              <TweakSection label="Accent">
+                <TweakRadio
+                  label="Palette" value={accent}
+                  onChange={(v) => setTweak('accent', v)}
+                  options={[
+                    {value:'aurora',label:'Aurora'},
+                    {value:'sunset',label:'Sunset'},
+                    {value:'electric',label:'Neon'},
+                  ]}
+                />
+              </TweakSection>
+              <TweakSection label="Language">
+                <TweakRadio
+                  label="Lang" value={lang}
+                  onChange={(v) => setTweak('lang', v)}
+                  options={[{value:'en',label:'EN'},{value:'ru',label:'RU'}]}
+                />
+              </TweakSection>
+            </TweaksPanel>
+          </div>
+        </AppProvider>
+      </I18nProvider>
+    </ThemeProvider>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Root/>);
+
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gymbuddy-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gymbuddy
+      POSTGRES_PASSWORD: gymbuddy
+      POSTGRES_DB: gymbuddy
+    ports:
+      - "5432:5432"
+    volumes:
+      - gymbuddy-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gymbuddy -d gymbuddy"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  gymbuddy-pgdata:

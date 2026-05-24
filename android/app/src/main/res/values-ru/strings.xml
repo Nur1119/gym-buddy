@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GymBuddy</string>
+
+    <!-- Tabs -->
+    <string name="home">Главная</string>
+    <string name="workout">Тренировки</string>
+    <string name="discover">Знакомства</string>
+    <string name="friends">Друзья</string>
+    <string name="profile">Профиль</string>
+
+    <!-- Home -->
+    <string name="greeting">Добрый вечер</string>
+    <string name="ready_to_train">Готов потренироваться?</string>
+    <string name="today_plan">План на сегодня</string>
+    <string name="no_workout_today">На сегодня тренировок нет</string>
+    <string name="this_week">На этой неделе</string>
+    <string name="streak">Стрик</string>
+    <string name="xp">XP</string>
+    <string name="coins">Монеты</string>
+    <string name="quick_start">Быстрый старт</string>
+    <string name="start_workout">Начать тренировку</string>
+    <string name="empty_workout">Пустая тренировка</string>
+    <string name="generate_ai">AI-тренировка</string>
+    <string name="recent_routines">Недавние рутины</string>
+    <string name="weekly_volume">Объём за неделю</string>
+    <string name="muscle_heatmap">Активность мышц</string>
+
+    <!-- Workout -->
+    <string name="tracker">Трекер</string>
+    <string name="my_plan">Мой план</string>
+    <string name="planned_workout">Запланированная</string>
+    <string name="create_plan">Создать план</string>
+    <string name="start_empty_workout">Пустая тренировка</string>
+    <string name="generate_workout">AI-тренировка</string>
+    <string name="routines">Рутины</string>
+    <string name="my_routines">Мои рутины</string>
+    <string name="exercises">Упражнения</string>
+    <string name="create_custom">Создать упражнение</string>
+    <string name="add_exercise">Добавить упражнение</string>
+    <string name="finish_workout">Завершить</string>
+    <string name="rest_timer">Отдых</string>
+    <string name="sets">подходов</string>
+    <string name="reps">повторов</string>
+    <string name="weight_unit">кг</string>
+    <string name="set">Сет</string>
+
+    <!-- Discover -->
+    <string name="discover_title">Знакомства</string>
+    <string name="discover_sub">Найди партнёра по залу</string>
+    <string name="filters">Фильтры</string>
+    <string name="matches">Совпадения</string>
+    <string name="boost">Буст</string>
+    <string name="super_like">Супер-лайк</string>
+    <string name="rewind">Назад</string>
+    <string name="like">Лайк</string>
+    <string name="nope">Пропустить</string>
+    <string name="its_a_match">Это совпадение!</string>
+    <string name="send_message">Написать сообщение</string>
+    <string name="invite_to_gym">Пригласить в зал</string>
+    <string name="shared_workout">Совместная тренировка</string>
+    <string name="distance">км</string>
+    <string name="goal">Цель</string>
+    <string name="schedule">График</string>
+    <string name="level">Уровень</string>
+
+    <!-- Profile -->
+    <string name="edit_profile">Изменить профиль</string>
+    <string name="settings">Настройки</string>
+    <string name="stats">Статистика</string>
+    <string name="medals">Медали</string>
+    <string name="ranks">Рейтинг</string>
+    <string name="calendar">Календарь</string>
+    <string name="nutrition">Питание</string>
+    <string name="achievements">Достижения</string>
+
+    <!-- Settings -->
+    <string name="appearance">Тема</string>
+    <string name="language">Язык</string>
+    <string name="units">Единицы</string>
+    <string name="notifications">Уведомления</string>
+    <string name="account">Аккаунт</string>
+    <string name="logout">Выйти</string>
+    <string name="privacy">Конфиденциальность</string>
+    <string name="terms">Условия</string>
+    <string name="accent">Акцент</string>
+    <string name="accent_aurora">Аврора</string>
+    <string name="accent_sunset">Закат</string>
+    <string name="accent_neon">Неон</string>
+
+    <!-- Generic -->
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="done">Готово</string>
+    <string name="next">Далее</string>
+    <string name="back">Назад</string>
+    <string name="add">Добавить</string>
+    <string name="edit">Изменить</string>
+    <string name="delete">Удалить</string>
+    <string name="search">Поиск</string>
+    <string name="name">Имя</string>
+    <string name="age">Возраст</string>
+    <string name="height">Рост</string>
+    <string name="weight_label">Вес</string>
+    <string name="bio">О себе</string>
+    <string name="today">Сегодня</string>
+    <string name="yesterday">Вчера</string>
+
+    <!-- Workout categories -->
+    <string name="push">Жим</string>
+    <string name="pull">Тяга</string>
+    <string name="legs">Ноги</string>
+    <string name="upper">Верх</string>
+    <string name="lower">Низ</string>
+    <string name="full">Всё тело</string>
+    <string name="cardio">Кардио</string>
+    <string name="core">Кор</string>
+
+    <!-- Nutrition -->
+    <string name="calories">Калории</string>
+    <string name="protein">Белки</string>
+    <string name="carbs">Углеводы</string>
+    <string name="fats">Жиры</string>
+    <string name="add_meal">Добавить приём</string>
+    <string name="breakfast">Завтрак</string>
+    <string name="lunch">Обед</string>
+    <string name="dinner">Ужин</string>
+    <string name="snack">Перекус</string>
+
+    <!-- Friends -->
+    <string name="online">В сети</string>
+    <string name="requests">Заявки</string>
+    <string name="leaderboard">Лидерборд</string>
+
+    <!-- Chat -->
+    <string name="type_message">Сообщение…</string>
+    <string name="matched_on">Совпали</string>
+
+    <!-- Misc -->
+    <string name="streak_days">дней подряд</string>
+    <string name="new_match">Новое совпадение</string>
+    <string name="suggest_workout">Предложить тренировку</string>
+
+    <!-- Auth -->
+    <string name="login">Вход</string>
+    <string name="register">Создать аккаунт</string>
+    <string name="email">Email</string>
+    <string name="password">Пароль</string>
+    <string name="have_account">Уже есть аккаунт?</string>
+    <string name="no_account">Нет аккаунта?</string>
+    <string name="sign_in">Войти</string>
+    <string name="sign_up">Регистрация</string>
+    <string name="welcome">С возвращением</string>
+    <string name="join">Присоединяйся к GymBuddy</string>
+</resources>
