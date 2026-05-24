@@ -54,15 +54,29 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -x
+          LOG=build/xcodebuild.log
+          if [ ! -f "$LOG" ]; then
+            echo "(no log file)" > /tmp/loglines.txt
+          else
+            # keep only lines with errors/warnings + last context, cap to 40KB
+            grep -E "error:|warning:|FAILED|fatal|Undefined|cannot find|Error|^\*\*" "$LOG" | tail -n 250 > /tmp/loglines.txt || true
+            if [ ! -s /tmp/loglines.txt ]; then tail -n 300 "$LOG" > /tmp/loglines.txt; fi
+            head -c 40000 /tmp/loglines.txt > /tmp/loglines.trim.txt
+            mv /tmp/loglines.trim.txt /tmp/loglines.txt
+          fi
           {
-            echo '### iOS build failure'
+            echo '### iOS build failure (filtered errors, truncated to 40KB)'
             echo
             echo '```'
-            tail -n 400 build/xcodebuild.log
+            cat /tmp/loglines.txt
             echo '```'
           } > /tmp/comment.md
           jq -Rs '{body: .}' < /tmp/comment.md > /tmp/payload.json
-          gh api -X POST "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" --input /tmp/payload.json
+          gh api -X POST "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" --input /tmp/payload.json || {
+            echo "Comment post failed. Payload size: $(wc -c </tmp/payload.json)"
+            head -c 2000 /tmp/payload.json
+            exit 1
+          }
 
       - name: Package unsigned .ipa
         if: success()
