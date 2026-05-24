@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -248,7 +249,7 @@ fun HomeScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            androidx.compose.foundation.lazy.items(state.routines, key = { it.id }) { r ->
+            items(state.routines, key = { it.id }) { r ->
                 RoutineCardSmall(r)
             }
             if (state.routines.isEmpty()) {
