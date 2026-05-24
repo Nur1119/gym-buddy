@@ -129,9 +129,12 @@ def emit_group_blocks(group, is_top, extras=None):
 # File refs section
 file_ref_lines = []
 for ref_id, fname, path, ftype in file_refs:
+    # sourceTree=<group> makes `path` relative to the parent group's own path.
+    # Since each Swift file already lives in a group whose path is its directory,
+    # the file's path must be just the basename — otherwise Xcode doubles the dir.
     file_ref_lines.append(
         "\t\t" + ref_id + " /* " + fname + " */ = {isa = PBXFileReference; lastKnownFileType = " + ftype +
-        "; name = \"" + fname + "\"; path = \"" + path + "\"; sourceTree = \"<group>\"; };"
+        "; path = \"" + fname + "\"; sourceTree = \"<group>\"; };"
     )
 if plist_file:
     file_ref_lines.append(
