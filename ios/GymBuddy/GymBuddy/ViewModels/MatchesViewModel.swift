@@ -45,8 +45,9 @@ public final class ChatViewModel: ObservableObject {
         guard let token = TokenStore.shared.load() else { return }
         ws.connect(matchId: match.id, token: token) { [weak self] event in
             guard case .message(let m) = event else { return }
+            guard let self else { return }
             Task { @MainActor in
-                self?.messages.append(m)
+                self.messages.append(m)
             }
         }
     }

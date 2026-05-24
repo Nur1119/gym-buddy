@@ -61,7 +61,10 @@ public final class ActiveWorkoutViewModel: ObservableObject {
     public func start() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.elapsed += 1 }
+            guard let self else { return }
+            Task { @MainActor in
+                self.elapsed += 1
+            }
         }
     }
 
@@ -84,8 +87,8 @@ public final class ActiveWorkoutViewModel: ObservableObject {
         isResting = true
         restTimer?.invalidate()
         restTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self else { return }
             Task { @MainActor in
-                guard let self = self else { return }
                 if self.restSeconds > 0 { self.restSeconds -= 1 }
                 if self.restSeconds == 0 { self.isResting = false }
             }

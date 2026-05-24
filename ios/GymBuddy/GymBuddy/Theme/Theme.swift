@@ -3,7 +3,7 @@ import Combine
 
 // MARK: - Color hex helper
 extension Color {
-    init(hex: String) {
+    public init(hex: String) {
         let s = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
         var v: UInt64 = 0
         Scanner(string: s).scanHexInt64(&v)
