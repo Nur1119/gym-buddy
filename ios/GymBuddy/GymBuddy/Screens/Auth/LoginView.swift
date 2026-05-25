@@ -19,6 +19,7 @@ public struct LoginView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
+
                     // Gradient logo
                     Text("GymBuddy")
                         .font(.system(size: 38, weight: .black))
@@ -94,6 +95,7 @@ public struct LoginView: View {
                     Spacer()
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
         }
         .sheet(isPresented: $showRegister) {
             RegisterView().environmentObject(auth).environmentObject(themeManager)

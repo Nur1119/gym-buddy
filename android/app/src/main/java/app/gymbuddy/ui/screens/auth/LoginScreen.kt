@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -84,25 +85,12 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(tokens.surface.bg)
-            .padding(24.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp)
+            .imePadding(),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Spacer(Modifier.height(40.dp))
-
-        // Brand logo
-        Box(
-            modifier = Modifier
-                .size(64.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(tokens.accent.gradient()),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                "GB",
-                color = Color.White,
-                style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.ExtraBold),
-            )
-        }
 
         Text(
             text = tr(R.string.welcome),

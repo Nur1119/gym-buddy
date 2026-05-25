@@ -9,8 +9,9 @@ public struct RegisterView: View {
 
     @State private var email = ""
     @State private var password = ""
+    @State private var confirmPassword = ""
     @State private var name = ""
-    @State private var age = "28"
+    @State private var localError: String? = nil
 
     public init() {}
 
@@ -29,25 +30,32 @@ public struct RegisterView: View {
                         field(L("name", lang), $name)
                         field(L("email", lang), $email, keyboard: .emailAddress)
                         field(L("password", lang), $password, isSecure: true)
-                        field(L("age", lang), $age, keyboard: .numberPad)
+                        field(L("confirmPassword", lang), $confirmPassword, isSecure: true)
 
-                        if let err = auth.errorMessage {
+                        let displayError = localError ?? auth.errorMessage
+                        if let err = displayError {
                             Text(err)
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundStyle(theme.danger)
                         }
 
                         GradientButton(L("signUp", lang), icon: .check) {
+                            guard password == confirmPassword else {
+                                localError = "Passwords do not match"
+                                return
+                            }
+                            localError = nil
                             Task {
                                 await auth.register(email: email, password: password,
-                                                    name: name, age: Int(age) ?? 18)
-                                dismiss()
+                                                    name: name, age: 0)
+                                if auth.user != nil { dismiss() }
                             }
                         }
                         .padding(.top, 10)
                     }
                     .padding(.horizontal, 18)
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
             .navigationTitle("")
             .toolbar {

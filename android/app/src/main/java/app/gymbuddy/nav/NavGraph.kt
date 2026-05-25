@@ -44,6 +44,7 @@ import app.gymbuddy.ui.screens.workout.CreateExerciseScreen
 import app.gymbuddy.ui.screens.workout.ExercisesListScreen
 import app.gymbuddy.ui.screens.workout.RoutineDetailScreen
 import app.gymbuddy.ui.screens.workout.WorkoutTrackerScreen
+import app.gymbuddy.util.RequestNotificationPermission
 import app.gymbuddy.viewmodel.AppSettingsViewModel
 
 /**
@@ -58,6 +59,8 @@ fun GymBuddyNavGraph(settingsVm: AppSettingsViewModel) {
     val navController = rememberNavController()
     val tokens = GymTheme.tokens
     val settings by settingsVm.state.collectAsStateWithLifecycle()
+
+    RequestNotificationPermission()
     val backEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backEntry?.destination?.route
 

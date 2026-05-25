@@ -53,6 +53,7 @@
 		77123FD7B9DE921E0D2E43FA /* ExercisesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB705146CCE14BF0B513E997; };
 		B2F7E7DDF6C54897C38290BA /* RoutineDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5382553CA5EECD39B784E03; };
 		0E8AAD976415B97ED31CCAF4 /* WorkoutTrackerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 788A4BD6FBFB69E18E3FB59A; };
+		5F0367027A3DEFC273F3C303 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6C98275A6ADB2E0E67420D; };
 		484D881E710B3AB0E2173125 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F78A1D68301D0D48297703A9; };
 		A0B4B8DA6895EF309486C936 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = C444F50FEBFFEF87D1DD0B07; };
 		3A3D78BB52DBCE601BD3347D /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06B910122FDBC589D4CF2B23; };
@@ -111,6 +112,7 @@
 		EB705146CCE14BF0B513E997 /* ExercisesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExercisesListView.swift"; sourceTree = "<group>"; };
 		F5382553CA5EECD39B784E03 /* RoutineDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RoutineDetailView.swift"; sourceTree = "<group>"; };
 		788A4BD6FBFB69E18E3FB59A /* WorkoutTrackerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WorkoutTrackerView.swift"; sourceTree = "<group>"; };
+		FA6C98275A6ADB2E0E67420D /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NotificationManager.swift"; sourceTree = "<group>"; };
 		F78A1D68301D0D48297703A9 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Theme.swift"; sourceTree = "<group>"; };
 		C444F50FEBFFEF87D1DD0B07 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Typography.swift"; sourceTree = "<group>"; };
 		06B910122FDBC589D4CF2B23 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AuthViewModel.swift"; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 				8FCD1F0B391C27DDBD6118D2 /* Networking */,
 				3C2E0420506E28D20D18C3BD /* Root */,
 				FE8ED8B394174B97E80AA593 /* Screens */,
+				98F5AE4C337D7C7CE4F428DD /* Services */,
 				887791B11BFB4B0A25E83616 /* Theme */,
 				482E15A810E420EA6D05B1E8 /* ViewModels */,
 				4CA152537B914C4752095D0F /* GymBuddyApp.swift */,
@@ -304,6 +307,14 @@
 				788A4BD6FBFB69E18E3FB59A /* WorkoutTrackerView.swift */,
 			);
 			path = "Workout";
+			sourceTree = "<group>";
+		};
+		98F5AE4C337D7C7CE4F428DD /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				FA6C98275A6ADB2E0E67420D /* NotificationManager.swift */,
+			);
+			path = "Services";
 			sourceTree = "<group>";
 		};
 		887791B11BFB4B0A25E83616 /* Theme */ = {
@@ -456,6 +467,7 @@
 				77123FD7B9DE921E0D2E43FA /* ExercisesListView.swift in Sources */,
 				B2F7E7DDF6C54897C38290BA /* RoutineDetailView.swift in Sources */,
 				0E8AAD976415B97ED31CCAF4 /* WorkoutTrackerView.swift in Sources */,
+				5F0367027A3DEFC273F3C303 /* NotificationManager.swift in Sources */,
 				484D881E710B3AB0E2173125 /* Theme.swift in Sources */,
 				A0B4B8DA6895EF309486C936 /* Typography.swift in Sources */,
 				3A3D78BB52DBCE601BD3347D /* AuthViewModel.swift in Sources */,

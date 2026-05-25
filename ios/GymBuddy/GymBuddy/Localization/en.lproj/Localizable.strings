@@ -26,6 +26,7 @@
 "registerTitle" = "Create account";
 "email" = "Email";
 "password" = "Password";
+"confirmPassword" = "Confirm Password";
 "signIn" = "Sign in";
 "signUp" = "Sign up";
 "continueWithGoogle" = "Continue with Google";

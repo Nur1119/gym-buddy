@@ -10,6 +10,7 @@ struct GymBuddyApp: App {
             RootView()
                 .environmentObject(themeManager)
                 .environmentObject(auth)
+                .onAppear { NotificationManager.shared.requestPermission() }
         }
     }
 }

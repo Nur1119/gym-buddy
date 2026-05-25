@@ -88,7 +88,8 @@ public enum L10n {
         "suggestWorkout": "Suggest a workout",
         // auth
         "loginTitle": "Welcome back", "registerTitle": "Create account",
-        "email": "Email", "password": "Password", "signIn": "Sign in", "signUp": "Sign up",
+        "email": "Email", "password": "Password", "confirmPassword": "Confirm Password",
+        "signIn": "Sign in", "signUp": "Sign up",
         "noAccount": "No account yet?", "haveAccount": "Already have an account?",
         "continueWithGoogle": "Continue with Google",
     ]
@@ -135,7 +136,8 @@ public enum L10n {
         "streakDays": "дней подряд", "newMatch": "Новое совпадение",
         "suggestWorkout": "Предложить тренировку",
         "loginTitle": "С возвращением", "registerTitle": "Создать аккаунт",
-        "email": "Email", "password": "Пароль", "signIn": "Войти", "signUp": "Регистрация",
+        "email": "Email", "password": "Пароль", "confirmPassword": "Подтвердите пароль",
+        "signIn": "Войти", "signUp": "Регистрация",
         "noAccount": "Ещё нет аккаунта?", "haveAccount": "Уже есть аккаунт?",
         "continueWithGoogle": "Войти через Google",
     ]

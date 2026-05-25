@@ -26,6 +26,7 @@
 "registerTitle" = "Создать аккаунт";
 "email" = "Email";
 "password" = "Пароль";
+"confirmPassword" = "Подтвердите пароль";
 "signIn" = "Войти";
 "signUp" = "Регистрация";
 "continueWithGoogle" = "Войти через Google";

@@ -10,18 +10,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,23 +47,19 @@ fun RegisterScreen(
     val state by vm.state.collectAsStateWithLifecycle()
     LaunchedEffect(state.success) { if (state.success) onRegistered() }
 
+    var confirmPassword by remember { mutableStateOf("") }
+    var localError by remember { mutableStateOf<String?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(tokens.surface.bg)
-            .padding(24.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp)
+            .imePadding(),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Spacer(Modifier.height(40.dp))
-        Box(
-            modifier = Modifier
-                .size(64.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(tokens.accent.gradient()),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("GB", color = Color.White, style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.ExtraBold))
-        }
         Text(
             text = tr(R.string.join),
             color = tokens.surface.text,
@@ -71,9 +69,10 @@ fun RegisterScreen(
         FormField(label = tr(R.string.name), value = state.name, onChange = vm::setName)
         FormField(label = tr(R.string.email), value = state.email, onChange = vm::setEmail, keyboard = KeyboardType.Email)
         FormField(label = tr(R.string.password), value = state.password, onChange = vm::setPassword, keyboard = KeyboardType.Password, password = true)
-        FormField(label = tr(R.string.age), value = state.age, onChange = vm::setAge, keyboard = KeyboardType.Number)
-        if (state.error != null) {
-            Text(state.error!!, color = tokens.surface.danger, style = TextStyle(fontSize = 13.sp))
+        FormField(label = "CONFIRM PASSWORD", value = confirmPassword, onChange = { confirmPassword = it }, keyboard = KeyboardType.Password, password = true)
+        val displayError = state.error ?: localError
+        if (displayError != null) {
+            Text(displayError, color = tokens.surface.danger, style = TextStyle(fontSize = 13.sp))
         }
         Spacer(Modifier.height(8.dp))
         if (state.loading) {
@@ -81,7 +80,10 @@ fun RegisterScreen(
                 CircularProgressIndicator(color = tokens.accent.p2)
             }
         } else {
-            GradientButton(text = tr(R.string.sign_up), onClick = vm::register)
+            GradientButton(text = tr(R.string.sign_up), onClick = {
+                if (state.password != confirmPassword) { localError = "Passwords do not match" }
+                else { localError = null; vm.register() }
+            })
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             Text(tr(R.string.have_account) + " ", color = tokens.surface.textMuted, style = TextStyle(fontSize = 13.sp))

@@ -57,14 +57,13 @@ class AuthViewModel @Inject constructor(
 
     fun register() {
         val s = _state.value
-        val age = s.age.toIntOrNull() ?: 18
         if (s.email.isBlank() || s.password.isBlank() || s.name.isBlank()) {
             _state.value = s.copy(error = "All fields required")
             return
         }
         _state.value = s.copy(loading = true)
         viewModelScope.launch {
-            repo.register(s.email.trim(), s.password, s.name.trim(), age)
+            repo.register(s.email.trim(), s.password, s.name.trim(), 0)
                 .onSuccess { _state.value = _state.value.copy(loading = false, success = true) }
                 .onFailure { _state.value = _state.value.copy(loading = false, error = it.message ?: "Registration failed") }
         }

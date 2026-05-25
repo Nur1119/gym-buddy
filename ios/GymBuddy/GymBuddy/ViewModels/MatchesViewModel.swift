@@ -48,6 +48,9 @@ public final class ChatViewModel: ObservableObject {
             guard let self else { return }
             Task { @MainActor in
                 self.messages.append(m)
+                if m.senderId != "me" {
+                    NotificationManager.shared.showMessage(from: self.match.name, text: m.text ?? "New message")
+                }
             }
         }
     }
