@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,7 +49,9 @@ fun CalendarScreen(onBack: () -> Unit, vm: CalendarViewModel = hiltViewModel()) 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(tokens.surface.bg),
+            .background(tokens.surface.bg)
+            .statusBarsPadding()
+            .navigationBarsPadding(),
     ) {
         ScreenHeader(
             title = tr(R.string.calendar),

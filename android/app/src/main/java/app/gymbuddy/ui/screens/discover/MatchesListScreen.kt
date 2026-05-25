@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -58,7 +61,8 @@ fun MatchesListScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(tokens.surface.bg),
+            .background(tokens.surface.bg)
+            .statusBarsPadding(),
     ) {
         ScreenHeader(
             title = tr(R.string.matches),
@@ -66,7 +70,10 @@ fun MatchesListScreen(
             left = { IconButton(name = "arrow-left", onClick = onBack) },
         )
 
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 80.dp),
+        ) {
             // ── New matches strip
             item {
                 Text(

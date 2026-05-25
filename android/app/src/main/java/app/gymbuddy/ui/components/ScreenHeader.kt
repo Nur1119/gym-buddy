@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -36,31 +37,33 @@ fun ScreenHeader(
     large: Boolean = false,
 ) {
     val tokens = GymTheme.tokens
-    Row(
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 18.dp, end = 18.dp, top = 4.dp, bottom = if (large) 12.dp else 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .heightIn(min = if (large) 56.dp else 48.dp)
+            .padding(horizontal = 18.dp, vertical = if (large) 8.dp else 6.dp),
     ) {
-        Box(modifier = Modifier.size(32.dp), contentAlignment = Alignment.CenterStart) {
-            left?.invoke()
+        Text(
+            text = title,
+            modifier = Modifier.align(Alignment.Center),
+            color = tokens.surface.text,
+            style = TextStyle(
+                fontSize = if (large) 22.sp else 17.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = if (large) (-0.5).sp else 0.sp,
+            ),
+        )
+        if (left != null) {
+            Box(
+                modifier = Modifier.align(Alignment.CenterStart).heightIn(min = 44.dp),
+                contentAlignment = Alignment.CenterStart,
+            ) { left() }
         }
-        Box(
-            modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
-            contentAlignment = if (large) Alignment.CenterStart else Alignment.Center,
-        ) {
-            Text(
-                text = title,
-                color = tokens.surface.text,
-                style = TextStyle(
-                    fontSize = if (large) 22.sp else 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = if (large) (-0.5).sp else 0.sp,
-                ),
-            )
-        }
-        Box(modifier = Modifier.size(32.dp), contentAlignment = Alignment.CenterEnd) {
-            right?.invoke()
+        if (right != null) {
+            Box(
+                modifier = Modifier.align(Alignment.CenterEnd).heightIn(min = 44.dp),
+                contentAlignment = Alignment.CenterEnd,
+            ) { right() }
         }
     }
 }

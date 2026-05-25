@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,7 +44,8 @@ fun LeaderboardScreen(onBack: () -> Unit, vm: ProfileViewModel = hiltViewModel()
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(tokens.surface.bg),
+            .background(tokens.surface.bg)
+            .statusBarsPadding(),
     ) {
         ScreenHeader(
             title = tr(R.string.leaderboard),
@@ -50,7 +54,7 @@ fun LeaderboardScreen(onBack: () -> Unit, vm: ProfileViewModel = hiltViewModel()
         )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = 8.dp, bottom = 80.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(state.leaderboard) { entry ->

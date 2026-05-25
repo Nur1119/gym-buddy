@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +18,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -28,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,7 +58,6 @@ fun EditProfileScreen(onBack: () -> Unit, vm: ProfileViewModel = hiltViewModel()
     val tokens = GymTheme.tokens
     val state by vm.state.collectAsStateWithLifecycle()
     val u = state.user
-    val statusInsets = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
     var name by remember { mutableStateOf(u?.name ?: "") }
     var handle by remember { mutableStateOf(u?.userHandle ?: "") }
@@ -70,11 +68,23 @@ fun EditProfileScreen(onBack: () -> Unit, vm: ProfileViewModel = hiltViewModel()
     var bio by remember { mutableStateOf(u?.bio ?: "") }
     var goal by remember { mutableStateOf(u?.goal ?: "Hypertrophy") }
 
+    LaunchedEffect(u?.id) {
+        if (u != null) {
+            name = u.name
+            handle = u.userHandle
+            age = u.age?.toString() ?: ""
+            height = u.height?.toString() ?: ""
+            weight = u.weight?.toString() ?: ""
+            bio = u.bio ?: ""
+            goal = u.goal ?: "Hypertrophy"
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(tokens.surface.bg)
-            .padding(top = statusInsets),
+            .statusBarsPadding(),
     ) {
         // Fixed header — won't be hidden by status bar
         ScreenHeader(

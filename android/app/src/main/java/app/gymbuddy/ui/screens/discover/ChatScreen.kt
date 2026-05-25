@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -74,6 +75,7 @@ fun ChatScreen(
                 .fillMaxWidth()
                 .background(tokens.surface.surface)
                 .border(1.dp, tokens.surface.border, RoundedCornerShape(0.dp))
+                .statusBarsPadding()
                 .padding(start = 14.dp, end = 14.dp, top = 4.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
