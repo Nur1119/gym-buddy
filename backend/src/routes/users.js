@@ -28,6 +28,7 @@ const updateSchema = z
     gymLng: z.number().nullable().optional(),
     schedule: z.array(z.number().int().min(0).max(6)).optional(),
     interests: z.array(z.string()).optional(),
+    userHandle: z.string().min(3).max(15).regex(/^[a-z][a-z0-9_]*$/, 'Handle must start with a letter, only lowercase letters, numbers, underscores').optional(),
   })
   .strict();
 
@@ -60,6 +61,16 @@ router.patch('/me', authRequired, validate(updateSchema), async (req, res, next)
     const update = { updated_at: knex.fn.now() };
     for (const [k, v] of Object.entries(req.body)) {
       if (map[k]) update[map[k]] = v;
+    }
+    if (req.body.userHandle) {
+      const taken = await knex('users')
+        .where({ user_handle: req.body.userHandle })
+        .whereNot({ id: req.userId })
+        .first();
+      if (taken) {
+        return res.status(409).json({ error: { code: 'handle_taken', message: 'This handle is already taken' } });
+      }
+      update.user_handle = req.body.userHandle;
     }
     if (Object.keys(update).length > 1) {
       await knex('users').where({ id: req.userId }).update(update);
@@ -132,6 +143,22 @@ router.delete('/me/photos/:photoId', authRequired, async (req, res, next) => {
     }
     await knex('user_photos').where({ id: row.id }).del();
     res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/search', authRequired, async (req, res, next) => {
+  try {
+    const { handle } = req.query;
+    if (!handle) {
+      return res.status(400).json({ error: { code: 'bad_request', message: 'handle query param required' } });
+    }
+    const row = await knex('users').where({ user_handle: handle.toLowerCase() }).first();
+    if (!row) {
+      return res.status(404).json({ error: { code: 'not_found', message: 'User not found' } });
+    }
+    res.json(await serializeUser(row));
   } catch (err) {
     next(err);
   }

@@ -16,6 +16,7 @@ async function serializeUser(row, opts = {}) {
     id: row.id,
     name: row.name,
     username: row.username,
+    userHandle: row.user_handle || '',
     age: row.age,
     height: row.height,
     weight: row.weight,

@@ -16,6 +16,10 @@ data class ProfileUiState(
     val friends: List<FriendDto> = emptyList(),
     val leaderboard: List<LeaderboardEntry> = emptyList(),
     val loading: Boolean = false,
+    val searchResult: UserDto? = null,
+    val searchLoading: Boolean = false,
+    val searchError: String? = null,
+    val friendRequestSent: Boolean = false,
 )
 
 @HiltViewModel
@@ -52,6 +56,30 @@ class ProfileViewModel @Inject constructor(
                 onDone()
             }
         }
+    }
+
+    fun searchByHandle(handle: String) {
+        val h = handle.trim().removePrefix("@")
+        if (h.isEmpty()) return
+        _state.value = _state.value.copy(searchLoading = true, searchResult = null, searchError = null, friendRequestSent = false)
+        viewModelScope.launch {
+            repo.searchByHandle(h).fold(
+                onSuccess = { _state.value = _state.value.copy(searchLoading = false, searchResult = it) },
+                onFailure = { _state.value = _state.value.copy(searchLoading = false, searchError = "User not found") },
+            )
+        }
+    }
+
+    fun sendFriendRequest(userId: String) {
+        viewModelScope.launch {
+            repo.sendFriendRequest(userId).onSuccess {
+                _state.value = _state.value.copy(friendRequestSent = true)
+            }
+        }
+    }
+
+    fun clearSearch() {
+        _state.value = _state.value.copy(searchResult = null, searchError = null, searchLoading = false, friendRequestSent = false)
     }
 }
 

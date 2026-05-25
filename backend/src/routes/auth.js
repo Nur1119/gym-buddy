@@ -34,12 +34,15 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const username = '@' + name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12) +
       Math.floor(Math.random() * 1000);
+    const { c: uCount } = await knex('users').count('id as c').first();
+    const userHandle = 'gb_' + String(parseInt(uCount) + 1).padStart(8, '0');
     const [row] = await knex('users')
       .insert({
         email: email.toLowerCase(),
         password_hash: passwordHash,
         name,
         username,
+        user_handle: userHandle,
         age: age || null,
         goal: 'Hypertrophy',
         level: 'Beginner',
@@ -115,8 +118,10 @@ router.post('/google', validate(googleSchema), async (req, res, next) => {
       const name = payload.name || email.split('@')[0];
       const username = '@' + name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12) +
         Math.floor(Math.random() * 1000);
+      const { c: gCount } = await knex('users').count('id as c').first();
+      const gHandle = 'gb_' + String(parseInt(gCount) + 1).padStart(8, '0');
       [row] = await knex('users')
-        .insert({ email, name, username, google_id: payload.sub, goal: 'Hypertrophy', level: 'Beginner' })
+        .insert({ email, name, username, user_handle: gHandle, google_id: payload.sub, goal: 'Hypertrophy', level: 'Beginner' })
         .returning('*');
     } else if (!row.google_id) {
       await knex('users').where({ id: row.id }).update({ google_id: payload.sub });

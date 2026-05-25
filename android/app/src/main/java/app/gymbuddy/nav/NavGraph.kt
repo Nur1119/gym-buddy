@@ -42,6 +42,7 @@ import app.gymbuddy.ui.screens.profile.SettingsScreen
 import app.gymbuddy.ui.screens.workout.ActiveWorkoutScreen
 import app.gymbuddy.ui.screens.workout.CreateExerciseScreen
 import app.gymbuddy.ui.screens.workout.ExercisesListScreen
+import app.gymbuddy.ui.screens.workout.CreateRoutineScreen
 import app.gymbuddy.ui.screens.workout.RoutineDetailScreen
 import app.gymbuddy.ui.screens.workout.WorkoutTrackerScreen
 import app.gymbuddy.util.RequestNotificationPermission
@@ -111,7 +112,12 @@ fun GymBuddyNavGraph(settingsVm: AppSettingsViewModel) {
             // ── Tabs ────────────────────────────────────────────────
             composable(Routes.Home) {
                 ScreenWithBottomBar(showBottomBar = showBottomBar, currentRoute = Routes.Home, onSelect = { navigateToTab(navController, it) }) {
-                    HomeScreen(onStartWorkout = { navController.navigate(Routes.ActiveWorkout) })
+                    HomeScreen(
+                        onStartWorkout = { navController.navigate(Routes.ActiveWorkout) },
+                        onOpenProfile = { navigateToTab(navController, "profile") },
+                        onOpenMedals = { navController.navigate(Routes.MedalsScreen) },
+                        onGoWorkout = { navigateToTab(navController, "workout") },
+                    )
                 }
             }
             composable(Routes.Workout) {
@@ -120,9 +126,11 @@ fun GymBuddyNavGraph(settingsVm: AppSettingsViewModel) {
                         onStartActive = { navController.navigate(Routes.ActiveWorkout) },
                         onOpenExercises = { navController.navigate(Routes.Exercises) },
                         onOpenRoutine = { r -> navController.navigate(Routes.routineDetail(r.id)) },
+                        onCreateRoutine = { navController.navigate(Routes.CreateRoutine) },
                     )
                 }
             }
+
             composable(Routes.Discover) {
                 ScreenWithBottomBar(showBottomBar = showBottomBar, currentRoute = Routes.Discover, onSelect = { navigateToTab(navController, it) }) {
                     DiscoverScreen(
@@ -166,6 +174,12 @@ fun GymBuddyNavGraph(settingsVm: AppSettingsViewModel) {
             }
             composable(Routes.CreateExercise) {
                 CreateExerciseScreen(onBack = { navController.popBackStack() }, onSave = { navController.popBackStack() })
+            }
+            composable(Routes.CreateRoutine) {
+                CreateRoutineScreen(
+                    onBack = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack() },
+                )
             }
             composable(
                 Routes.RoutineDetail,

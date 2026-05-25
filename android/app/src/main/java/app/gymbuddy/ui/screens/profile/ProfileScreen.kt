@@ -110,11 +110,18 @@ fun ProfileScreen(
                 color = tokens.surface.text,
                 style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.ExtraBold),
             )
-            Text(
-                user?.username ?: "@guest",
-                color = tokens.surface.textMuted,
-                style = TextStyle(fontSize = 13.sp),
-            )
+            val displayHandle = when {
+                user?.userHandle?.isNotEmpty() == true -> "@${user.userHandle}"
+                user?.username?.isNotEmpty() == true -> "@${user.username}"
+                else -> null
+            }
+            if (displayHandle != null) {
+                Text(
+                    displayHandle,
+                    color = tokens.surface.textMuted,
+                    style = TextStyle(fontSize = 13.sp),
+                )
+            }
 
             // Level + XP card
             Spacer(Modifier.height(16.dp))

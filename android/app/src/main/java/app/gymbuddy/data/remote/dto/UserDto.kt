@@ -29,6 +29,7 @@ data class UserDto(
     val email: String = "",
     val name: String,
     val username: String = "",
+    val userHandle: String = "",
     val age: Int? = null,
     val height: Int? = null,
     val weight: Int? = null,
@@ -73,6 +74,7 @@ data class TokenResponse(
 @Serializable
 data class UpdateProfileRequest(
     val name: String? = null,
+    val userHandle: String? = null,
     val age: Int? = null,
     val height: Int? = null,
     val weight: Int? = null,

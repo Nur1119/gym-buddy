@@ -41,7 +41,6 @@ import app.gymbuddy.data.remote.dto.RoutineDto
 import app.gymbuddy.l10n.tr
 import app.gymbuddy.theme.GymTheme
 import app.gymbuddy.ui.components.AppIcon
-import app.gymbuddy.ui.components.Avatar
 import app.gymbuddy.ui.components.GymCard
 import app.gymbuddy.ui.components.IconButton
 import app.gymbuddy.ui.components.SectionHeader
@@ -58,6 +57,7 @@ fun WorkoutTrackerScreen(
     onStartActive: () -> Unit,
     onOpenExercises: () -> Unit,
     onOpenRoutine: (RoutineDto) -> Unit,
+    onCreateRoutine: () -> Unit = {},
     vm: WorkoutTrackerViewModel = hiltViewModel(),
 ) {
     val tokens = GymTheme.tokens
@@ -69,45 +69,26 @@ fun WorkoutTrackerScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(tokens.surface.bg)
-            .verticalScroll(rememberScrollState())
-            .padding(top = statusInsets, bottom = 24.dp),
+            .padding(top = statusInsets),
     ) {
-        // Hero strip
+        // Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 18.dp, end = 18.dp, top = 8.dp),
+                .padding(start = 18.dp, end = 18.dp, top = 8.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Avatar(name = "G", size = 40.dp, color1 = tokens.accent.p3, color2 = tokens.accent.p2)
-                Column {
-                    Text("Lv. 7", color = tokens.surface.textDim, style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.SemiBold))
-                    Box(
-                        modifier = Modifier
-                            .width(80.dp)
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(tokens.surface.chip),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(0.74f)
-                                .background(tokens.accent.gradient())
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(2.dp)),
-                        )
-                    }
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                IconButton(name = "plus", onClick = { /* TODO add */ }, background = tokens.accent.p2, tint = Color.White, size = 32.dp, iconSize = 18.dp)
-            }
+            Text(
+                tr(R.string.workout),
+                color = tokens.surface.text,
+                style = TextStyle(fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.5).sp),
+            )
+            IconButton(name = "plus", onClick = onCreateRoutine, background = tokens.accent.p2, tint = Color.White, size = 36.dp, iconSize = 18.dp)
         }
 
         // Tabs
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
         TabPills(
             tabs = listOf("tracker" to tr(R.string.tracker), "plan" to tr(R.string.my_plan)),
             active = tab,
@@ -115,84 +96,102 @@ fun WorkoutTrackerScreen(
             modifier = Modifier.padding(horizontal = 18.dp),
         )
 
-        // Planned workout
-        SectionHeader(title = tr(R.string.planned_workout))
-        Column(modifier = Modifier.padding(horizontal = 18.dp)) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(tokens.surface.surface)
-                    .border(1.dp, tokens.surface.borderStrong, RoundedCornerShape(16.dp))
-                    .clickable { /* TODO open create plan */ }
-                    .padding(18.dp),
-            ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp),
+        ) {
+            if (tab == "tracker") {
+                // New workout actions
+                SectionHeader(title = "Start workout")
+                Column(
+                    modifier = Modifier.padding(horizontal = 18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    ActionCard(title = tr(R.string.start_empty_workout), icon = "dumbbell", color = tokens.accent.p2, onClick = onStartActive)
+                    ActionCard(
+                        title = tr(R.string.generate_workout),
+                        subtitle = "AI generates a routine for you",
+                        icon = "spark",
+                        color = tokens.accent.p1,
+                        onClick = onCreateRoutine,
+                    )
+                }
+
+                // Recent workouts
+                SectionHeader(title = "Recent workouts")
+                Column(
+                    modifier = Modifier.padding(horizontal = 18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    if (state.recentWorkouts.isEmpty()) {
+                        GymCard(padding = 16.dp) {
+                            Text("No workouts yet. Start your first one!", color = tokens.surface.textMuted, style = TextStyle(fontSize = 14.sp))
+                        }
+                    } else {
+                        state.recentWorkouts.take(5).forEach { w ->
+                            GymCard(padding = 14.dp) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                ) {
+                                    Column {
+                                        Text(w.name.ifBlank { "Workout" }, color = tokens.surface.text, style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                                        Text(w.startedAt?.take(10) ?: "", color = tokens.surface.textMuted, style = TextStyle(fontSize = 11.sp))
+                                    }
+                                    AppIcon("chevron-right", size = 16.dp, tint = tokens.surface.textDim)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // My Plan tab — routines
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 18.dp, end = 18.dp, top = 18.dp, bottom = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(tokens.accent.gradientSoft()),
-                            contentAlignment = Alignment.Center,
-                        ) { AppIcon("edit", size = 20.dp, tint = tokens.accent.p2) }
-                        Text(
-                            tr(R.string.create_plan),
-                            color = tokens.surface.text,
-                            style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
-                        )
+                    Text(tr(R.string.routines), color = tokens.surface.text, style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold))
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        IconButton(name = "list", onClick = onOpenExercises, size = 32.dp, iconSize = 16.dp)
+                        IconButton(name = "plus", onClick = onCreateRoutine, size = 32.dp, iconSize = 16.dp)
                     }
-                    AppIcon("chevron-right", size = 18.dp, tint = tokens.surface.textDim)
                 }
-            }
-        }
 
-        // New workout
-        SectionHeader(title = "New workout")
-        Column(
-            modifier = Modifier.padding(horizontal = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            ActionCard(title = tr(R.string.start_empty_workout), icon = "dumbbell", color = tokens.accent.p2, onClick = onStartActive)
-            ActionCard(title = tr(R.string.generate_workout), icon = "spark", color = tokens.accent.p1, onClick = { /* TODO AI */ })
-        }
-
-        // Routines
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 18.dp, end = 18.dp, top = 18.dp, bottom = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(tr(R.string.routines), color = tokens.surface.text, style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold))
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                IconButton(name = "list", onClick = onOpenExercises, size = 32.dp, iconSize = 16.dp)
-                IconButton(name = "plus", onClick = { /* TODO add */ }, size = 32.dp, iconSize = 16.dp)
-            }
-        }
-
-        Text(
-            "${tr(R.string.my_routines)} (${state.routines.size})",
-            color = tokens.surface.textMuted,
-            modifier = Modifier.padding(horizontal = 18.dp),
-            style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.SemiBold),
-        )
-        Spacer(Modifier.height(8.dp))
-        Column(
-            modifier = Modifier.padding(horizontal = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            state.routines.forEach { r ->
-                RoutineRow(routine = r, onClick = { onOpenRoutine(r) })
-            }
-            if (state.routines.isEmpty()) {
-                GymCard(padding = 16.dp) {
-                    Text("No routines yet. Create one!", color = tokens.surface.textMuted, style = TextStyle(fontSize = 14.sp))
+                Column(
+                    modifier = Modifier.padding(horizontal = 18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    if (state.routines.isEmpty()) {
+                        GymCard(padding = 16.dp, onClick = onCreateRoutine) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(tokens.accent.gradientSoft()),
+                                    contentAlignment = Alignment.Center,
+                                ) { AppIcon("plus", size = 20.dp, tint = tokens.accent.p2) }
+                                Column {
+                                    Text(tr(R.string.create_plan), color = tokens.surface.text, style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold))
+                                    Text("Build your first routine", color = tokens.surface.textMuted, style = TextStyle(fontSize = 12.sp))
+                                }
+                            }
+                        }
+                    } else {
+                        state.routines.forEach { r ->
+                            RoutineRow(routine = r, onClick = { onOpenRoutine(r) })
+                        }
+                    }
                 }
             }
         }
@@ -237,7 +236,7 @@ internal fun TabPills(
 }
 
 @Composable
-private fun ActionCard(title: String, icon: String, color: Color, onClick: () -> Unit) {
+private fun ActionCard(title: String, subtitle: String? = null, icon: String, color: Color, onClick: () -> Unit) {
     val tokens = GymTheme.tokens
     Row(
         modifier = Modifier
@@ -250,7 +249,12 @@ private fun ActionCard(title: String, icon: String, color: Color, onClick: () ->
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(title, color = tokens.surface.text, style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, color = tokens.surface.text, style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold))
+            if (subtitle != null) {
+                Text(subtitle, color = tokens.surface.textMuted, style = TextStyle(fontSize = 12.sp))
+            }
+        }
         Box(
             modifier = Modifier
                 .size(44.dp)

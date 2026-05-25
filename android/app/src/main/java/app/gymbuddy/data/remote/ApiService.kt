@@ -180,6 +180,10 @@ interface ApiService {
     @DELETE("nutrition/meals/{id}")
     suspend fun deleteMeal(@Path("id") id: String)
 
+    // ── User search ───────────────────────────────────────────────────────
+    @GET("users/search")
+    suspend fun searchUserByHandle(@Query("handle") handle: String): UserDto
+
     // ── Medals / Quests ───────────────────────────────────────────────────
     @GET("medals")
     suspend fun medals(): MedalListResponse

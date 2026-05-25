@@ -2,14 +2,18 @@ package app.gymbuddy.ui.screens.friends
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -18,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,11 +33,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.gymbuddy.R
@@ -41,6 +50,7 @@ import app.gymbuddy.l10n.tr
 import app.gymbuddy.theme.GymTheme
 import app.gymbuddy.ui.components.AppIcon
 import app.gymbuddy.ui.components.Avatar
+import app.gymbuddy.ui.components.GradientButton
 import app.gymbuddy.ui.components.IconButton
 import app.gymbuddy.ui.components.ScreenHeader
 import app.gymbuddy.ui.screens.workout.TabPills
@@ -58,7 +68,17 @@ fun FriendsScreen(
     val tokens = GymTheme.tokens
     val state by vm.state.collectAsStateWithLifecycle()
     var tab by remember { mutableStateOf("friends") }
+    var showAddDialog by remember { mutableStateOf(false) }
     val statusInsets = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
+    if (showAddDialog) {
+        AddFriendDialog(
+            state = state,
+            onSearch = { vm.searchByHandle(it) },
+            onSendRequest = { vm.sendFriendRequest(it) },
+            onDismiss = { showAddDialog = false; vm.clearSearch() },
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -69,7 +89,14 @@ fun FriendsScreen(
         ScreenHeader(
             title = tr(R.string.friends),
             large = true,
-            right = { IconButton(name = "plus", onClick = {}, background = tokens.accent.p2, tint = Color.White) },
+            right = {
+                IconButton(
+                    name = "plus",
+                    onClick = { showAddDialog = true },
+                    background = tokens.accent.p2,
+                    tint = Color.White,
+                )
+            },
         )
 
         TabPills(
@@ -216,6 +243,127 @@ private fun PodiumColumn(rank: Int, name: String, height: androidx.compose.ui.un
             verticalArrangement = Arrangement.Top,
         ) {
             Text(rank.toString(), color = Color.White, style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Black), modifier = Modifier.padding(top = 8.dp))
+        }
+    }
+}
+
+@Composable
+private fun AddFriendDialog(
+    state: app.gymbuddy.viewmodel.ProfileUiState,
+    onSearch: (String) -> Unit,
+    onSendRequest: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val tokens = GymTheme.tokens
+    var handle by remember { mutableStateOf("") }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .shadow(24.dp, RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(20.dp))
+                .background(tokens.surface.bg)
+                .imePadding()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text("Add Friend", color = tokens.surface.text, style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.ExtraBold))
+                Box(
+                    modifier = Modifier.size(32.dp).clip(CircleShape).background(tokens.surface.chip).clickable(onClick = onDismiss),
+                    contentAlignment = Alignment.Center,
+                ) { AppIcon("close", size = 16.dp, tint = tokens.surface.textDim) }
+            }
+
+            Text(
+                "Enter the user's handle (e.g. gb_00000001 or your_handle)",
+                color = tokens.surface.textMuted,
+                style = TextStyle(fontSize = 12.sp),
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(tokens.surface.surface)
+                        .border(1.dp, tokens.surface.border, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                ) {
+                    if (handle.isEmpty()) {
+                        Text("gb_00000001", color = tokens.surface.textDim, style = TextStyle(fontSize = 14.sp))
+                    }
+                    BasicTextField(
+                        value = handle,
+                        onValueChange = { handle = it.lowercase().filter { c -> c.isLetterOrDigit() || c == '_' }.take(15) },
+                        cursorBrush = SolidColor(tokens.surface.text),
+                        textStyle = TextStyle(fontSize = 14.sp, color = tokens.surface.text),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(tokens.accent.p2)
+                        .clickable(enabled = handle.length >= 3) { onSearch(handle) },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (state.searchLoading) {
+                        Text("…", color = Color.White, style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                    } else {
+                        AppIcon("search", size = 18.dp, tint = Color.White)
+                    }
+                }
+            }
+
+            when {
+                state.searchError != null -> {
+                    Text(state.searchError!!, color = tokens.surface.danger, style = TextStyle(fontSize = 13.sp))
+                }
+                state.searchResult != null -> {
+                    val u = state.searchResult!!
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(tokens.surface.surface)
+                            .border(1.dp, tokens.surface.border, RoundedCornerShape(14.dp))
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Avatar(name = u.name, size = 48.dp, color1 = tokens.accent.p3, color2 = tokens.accent.p2)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(u.name, color = tokens.surface.text, style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold))
+                            Text("@${u.userHandle.ifEmpty { u.username }}", color = tokens.surface.textMuted, style = TextStyle(fontSize = 11.sp))
+                        }
+                        if (state.friendRequestSent) {
+                            Text("Sent ✓", color = tokens.surface.success, style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold))
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(tokens.accent.p2)
+                                    .clickable { onSendRequest(u.id) }
+                                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                            ) {
+                                Text("Add", color = Color.White, style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold))
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

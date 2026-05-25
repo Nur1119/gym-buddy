@@ -20,6 +20,7 @@ object Routes {
     const val ActiveWorkout = "workout/active"
     const val Exercises = "workout/exercises"
     const val CreateExercise = "workout/exercises/create"
+    const val CreateRoutine = "workout/routine/create"
     const val RoutineDetail = "workout/routine/{routineId}"
     fun routineDetail(id: String) = "workout/routine/$id"
 

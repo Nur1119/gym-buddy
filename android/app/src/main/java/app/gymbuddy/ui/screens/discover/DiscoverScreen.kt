@@ -184,29 +184,29 @@ fun DiscoverScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 14.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally),
+                .padding(horizontal = 18.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ActionButton(icon = "rewind", color = tokens.surface.warn, size = 44.dp) { vm.rewind() }
-            ActionButton(icon = "close", color = tokens.accent.nope, size = 56.dp) {
+            ActionButton(icon = "rewind", label = "Rewind", color = tokens.surface.warn, size = 44.dp) { vm.rewind() }
+            ActionButton(icon = "close", label = "Pass", color = tokens.accent.nope, size = 56.dp) {
                 scope.launch {
                     offsetX.animateTo(-screenWidthPx * 1.2f, tween(280))
                     vm.swipe(SwipeDirection.Pass)
                     offsetX.snapTo(0f)
                 }
             }
-            ActionButton(icon = "star", color = tokens.accent.superLike, size = 48.dp, glow = true) {
+            ActionButton(icon = "star", label = "Super", color = tokens.accent.superLike, size = 48.dp, glow = true) {
                 vm.swipe(SwipeDirection.SuperLike)
             }
-            ActionButton(icon = "heart-fill", color = tokens.accent.like, size = 56.dp) {
+            ActionButton(icon = "heart-fill", label = "Like", color = tokens.accent.like, size = 56.dp) {
                 scope.launch {
                     offsetX.animateTo(screenWidthPx * 1.2f, tween(280))
                     vm.swipe(SwipeDirection.Like)
                     offsetX.snapTo(0f)
                 }
             }
-            ActionButton(icon = "bolt", color = tokens.accent.boost, size = 44.dp, glow = true) { vm.boost() }
+            ActionButton(icon = "bolt", label = "Boost", color = tokens.accent.boost, size = 44.dp, glow = true) { vm.boost() }
         }
     }
 
@@ -243,25 +243,36 @@ private fun EmptyDeck() {
 @Composable
 private fun ActionButton(
     icon: String,
+    label: String,
     color: Color,
     size: androidx.compose.ui.unit.Dp,
     glow: Boolean = false,
     onClick: () -> Unit,
 ) {
-    Box(
-        modifier = Modifier
-            .size(size)
-            .shadow(
-                elevation = if (glow) 18.dp else 6.dp,
-                shape = CircleShape,
-                ambientColor = color,
-                spotColor = color,
-            )
-            .clip(CircleShape)
-            .background(Color.White)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        AppIcon(icon, size = size * 0.45f, tint = color)
+        Box(
+            modifier = Modifier
+                .size(size)
+                .shadow(
+                    elevation = if (glow) 18.dp else 6.dp,
+                    shape = CircleShape,
+                    ambientColor = color,
+                    spotColor = color,
+                )
+                .clip(CircleShape)
+                .background(Color.White)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            AppIcon(icon, size = size * 0.45f, tint = color)
+        }
+        Text(
+            label,
+            color = color,
+            style = TextStyle(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+        )
     }
 }

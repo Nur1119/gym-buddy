@@ -21,6 +21,14 @@ class ProfileRepository @Inject constructor(
         api.friendRequests().items
     }
 
+    suspend fun searchByHandle(handle: String): Result<UserDto> = runCatching {
+        api.searchUserByHandle(handle)
+    }
+
+    suspend fun sendFriendRequest(userId: String): Result<Unit> = runCatching {
+        api.sendFriendRequest(app.gymbuddy.data.remote.dto.CreateFriendRequest(userId))
+    }
+
     suspend fun leaderboard(scope: String, period: String): Result<List<LeaderboardEntry>> = runCatching {
         api.leaderboard(scope, period).items
     }
