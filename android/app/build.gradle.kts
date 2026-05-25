@@ -22,8 +22,18 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         debug {
+            signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = false
             buildConfigField("String", "API_BASE_URL", "\"https://gymbuddy-api-sc8p.onrender.com/api/v1/\"")
             buildConfigField("String", "WS_BASE_URL", "\"wss://gymbuddy-api-sc8p.onrender.com/api/v1\"")
