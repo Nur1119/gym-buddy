@@ -5,8 +5,8 @@ import Foundation
 // Google OAuth client configuration.
 // Replace GOOGLE_CLIENT_ID with your actual iOS client ID from Google Cloud Console.
 // The reversed client ID is used as the URL scheme for the OAuth callback.
-private let kGoogleClientID = "YOUR_CLIENT_ID.apps.googleusercontent.com"
-private let kGoogleReversedClientID = "com.googleusercontent.apps.YOUR_CLIENT_ID"
+private let kGoogleClientID = "356246047318-0uhr9mgfr7p6flt7tebsbaqv49l0p8bq.apps.googleusercontent.com"
+private let kGoogleReversedClientID = "com.googleusercontent.apps.356246047318-0uhr9mgfr7p6flt7tebsbaqv49l0p8bq"
 private let kGoogleTokenEndpoint = "https://oauth2.googleapis.com/token"
 private let kGoogleAuthEndpoint = "https://accounts.google.com/o/oauth2/v2/auth"
 

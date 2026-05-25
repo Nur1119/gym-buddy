@@ -62,7 +62,7 @@
         <dict>
             <key>CFBundleURLSchemes</key>
             <array>
-                <string>com.googleusercontent.apps.YOUR_CLIENT_ID</string>
+                <string>com.googleusercontent.apps.356246047318-0uhr9mgfr7p6flt7tebsbaqv49l0p8bq</string>
             </array>
             <key>CFBundleURLName</key>
             <string>Google Sign-In</string>

@@ -12,7 +12,20 @@
           "package_name": "app.gymbuddy"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "356246047318-vv879tmcem6kk7a5i8fpi5bkjvrt9vdi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.gymbuddy",
+            "certificate_hash": "6e7c82af62a235004f07bf261f127ee654413f73"
+          }
+        },
+        {
+          "client_id": "356246047318-ieem77veia8f9hvl7u4v503irap2qlgk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDjZguZlSPq2V5oXK7M8C5gw3ufMVIVH5Q"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "356246047318-ieem77veia8f9hvl7u4v503irap2qlgk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "356246047318-0uhr9mgfr7p6flt7tebsbaqv49l0p8bq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "app.gymbuddy.GymBuddy"
+              }
+            }
+          ]
         }
       }
     }
