@@ -19,6 +19,7 @@
 		C9E001DC8847F248C6C670CF /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02CBFFB2064A786731D6986A; };
 		39BFA71FAE722B97D6E74AE8 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E6E4DF3990E0CC5E92B63CB; };
 		38830ED0B167508C7D480FB7 /* Endpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D6F0EA614F0085520DBCB1; };
+		2B1D644D0EDA6401CCF84CA2 /* GoogleAuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B0DC97FD049CE99ABD0030; };
 		62C5053BC1DA57898640A7DD /* Exercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 532A0AA53F4D83CAEEA9215F; };
 		C66BA72676C9622BC07C9469 /* Match.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149DEB4B39B5D8B597C54D17; };
 		B158B79256FBBA70E979ADD6 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B26E26C82B7CCE55F67273; };
@@ -76,6 +77,7 @@
 		02CBFFB2064A786731D6986A /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "L10n.swift"; sourceTree = "<group>"; };
 		3E6E4DF3990E0CC5E92B63CB /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient.swift"; sourceTree = "<group>"; };
 		48D6F0EA614F0085520DBCB1 /* Endpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Endpoints.swift"; sourceTree = "<group>"; };
+		81B0DC97FD049CE99ABD0030 /* GoogleAuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GoogleAuthManager.swift"; sourceTree = "<group>"; };
 		532A0AA53F4D83CAEEA9215F /* Exercise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Exercise.swift"; sourceTree = "<group>"; };
 		149DEB4B39B5D8B597C54D17 /* Match.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Match.swift"; sourceTree = "<group>"; };
 		79B26E26C82B7CCE55F67273 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Message.swift"; sourceTree = "<group>"; };
@@ -197,6 +199,7 @@
 				51500F2AF28BF2308F01BFF0 /* Models */,
 				3E6E4DF3990E0CC5E92B63CB /* APIClient.swift */,
 				48D6F0EA614F0085520DBCB1 /* Endpoints.swift */,
+				81B0DC97FD049CE99ABD0030 /* GoogleAuthManager.swift */,
 				F01997B12C4185F3F0C5EE5B /* TokenStore.swift */,
 				F9749B423C2EC3AD1FAEEE0E /* WebSocketClient.swift */,
 			);
@@ -419,6 +422,7 @@
 				C9E001DC8847F248C6C670CF /* L10n.swift in Sources */,
 				39BFA71FAE722B97D6E74AE8 /* APIClient.swift in Sources */,
 				38830ED0B167508C7D480FB7 /* Endpoints.swift in Sources */,
+				2B1D644D0EDA6401CCF84CA2 /* GoogleAuthManager.swift in Sources */,
 				62C5053BC1DA57898640A7DD /* Exercise.swift in Sources */,
 				C66BA72676C9622BC07C9469 /* Match.swift in Sources */,
 				B158B79256FBBA70E979ADD6 /* Message.swift in Sources */,

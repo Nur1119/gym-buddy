@@ -1,3 +1,4 @@
+import AuthenticationServices
 import Foundation
 import SwiftUI
 
@@ -42,6 +43,21 @@ public final class AuthViewModel: ObservableObject {
             #if DEBUG
             user = .preview
             #endif
+        }
+    }
+
+    public func loginWithGoogle() async {
+        isLoading = true; errorMessage = nil
+        defer { isLoading = false }
+        do {
+            let idToken = try await GoogleAuthManager.shared.signIn()
+            let res = try await APIClient.shared.loginWithGoogle(idToken: idToken)
+            user = res.user
+        } catch {
+            if (error as? ASWebAuthenticationSessionError)?.code == .canceledLogin {
+                return
+            }
+            errorMessage = error.localizedDescription
         }
     }
 

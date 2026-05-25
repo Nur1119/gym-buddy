@@ -46,6 +46,15 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun loginWithGoogle(idToken: String) {
+        _state.value = _state.value.copy(loading = true)
+        viewModelScope.launch {
+            repo.loginWithGoogle(idToken)
+                .onSuccess { _state.value = _state.value.copy(loading = false, success = true) }
+                .onFailure { _state.value = _state.value.copy(loading = false, error = it.message ?: "Google Sign-In failed") }
+        }
+    }
+
     fun register() {
         val s = _state.value
         val age = s.age.toIntOrNull() ?: 18

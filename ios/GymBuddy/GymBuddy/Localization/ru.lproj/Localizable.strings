@@ -28,3 +28,4 @@
 "password" = "Пароль";
 "signIn" = "Войти";
 "signUp" = "Регистрация";
+"continueWithGoogle" = "Войти через Google";

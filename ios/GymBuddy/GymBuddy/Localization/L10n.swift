@@ -90,6 +90,7 @@ public enum L10n {
         "loginTitle": "Welcome back", "registerTitle": "Create account",
         "email": "Email", "password": "Password", "signIn": "Sign in", "signUp": "Sign up",
         "noAccount": "No account yet?", "haveAccount": "Already have an account?",
+        "continueWithGoogle": "Continue with Google",
     ]
 
     static let ru: [String: String] = [
@@ -136,6 +137,7 @@ public enum L10n {
         "loginTitle": "С возвращением", "registerTitle": "Создать аккаунт",
         "email": "Email", "password": "Пароль", "signIn": "Войти", "signUp": "Регистрация",
         "noAccount": "Ещё нет аккаунта?", "haveAccount": "Уже есть аккаунт?",
+        "continueWithGoogle": "Войти через Google",
     ]
 }
 

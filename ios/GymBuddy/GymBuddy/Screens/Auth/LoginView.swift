@@ -55,6 +55,31 @@ public struct LoginView: View {
                     .padding(.top, 6)
 
                     Button {
+                        Task { await auth.loginWithGoogle() }
+                    } label: {
+                        HStack(spacing: 10) {
+                            Text("G")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(width: 28, height: 28)
+                                .background(Color(red: 0.84, green: 0.18, blue: 0.13))
+                                .clipShape(Circle())
+                            Text(L("continueWithGoogle", lang))
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(theme.text)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(theme.surface)
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(theme.border, lineWidth: 1))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 18)
+                    .padding(.top, 6)
+
+                    Button {
                         showRegister = true
                     } label: {
                         HStack(spacing: 4) {

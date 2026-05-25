@@ -33,13 +33,22 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.gymbuddy.BuildConfig
 import app.gymbuddy.R
 import app.gymbuddy.l10n.tr
 import app.gymbuddy.theme.GymTheme
 import app.gymbuddy.ui.components.GradientButton
 import app.gymbuddy.viewmodel.AuthViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 
 @Composable
 fun LoginScreen(
@@ -50,6 +59,26 @@ fun LoginScreen(
     val tokens = GymTheme.tokens
     val state by vm.state.collectAsStateWithLifecycle()
     LaunchedEffect(state.success) { if (state.success) onLoggedIn() }
+
+    val context = LocalContext.current
+    val googleSignInClient = remember(context) {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, gso)
+    }
+    val googleLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            runCatching {
+                val account = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                    .getResult(ApiException::class.java)
+                account.idToken?.let { vm.loginWithGoogle(it) }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -105,7 +134,24 @@ fun LoginScreen(
             GradientButton(text = tr(R.string.sign_in), onClick = vm::login)
         }
 
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(8.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(tokens.surface.surface)
+                .border(1.dp, tokens.surface.border, RoundedCornerShape(12.dp))
+                .clickable { googleLauncher.launch(googleSignInClient.signInIntent) }
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "G  Continue with Google",
+                color = tokens.surface.text,
+                style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
+            )
+        }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             Text(tr(R.string.no_account) + " ", color = tokens.surface.textMuted, style = TextStyle(fontSize = 13.sp))

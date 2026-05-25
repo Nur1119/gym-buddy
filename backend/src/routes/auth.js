@@ -94,4 +94,40 @@ router.get('/me', authRequired, async (req, res, next) => {
   }
 });
 
+const googleSchema = z.object({
+  idToken: z.string().min(1),
+});
+
+router.post('/google', validate(googleSchema), async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+    const infoRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+    if (!infoRes.ok) {
+      return res.status(401).json({ error: { code: 'invalid_token', message: 'Invalid Google token' } });
+    }
+    const payload = await infoRes.json();
+    if (!payload.email || payload.error) {
+      return res.status(401).json({ error: { code: 'invalid_token', message: 'Token verification failed' } });
+    }
+    const email = payload.email.toLowerCase();
+    let row = await knex('users').where({ email }).first();
+    if (!row) {
+      const name = payload.name || email.split('@')[0];
+      const username = '@' + name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12) +
+        Math.floor(Math.random() * 1000);
+      [row] = await knex('users')
+        .insert({ email, name, username, google_id: payload.sub, goal: 'Hypertrophy', level: 'Beginner' })
+        .returning('*');
+    } else if (!row.google_id) {
+      await knex('users').where({ id: row.id }).update({ google_id: payload.sub });
+      row = await knex('users').where({ id: row.id }).first();
+    }
+    const token = signToken(row.id);
+    const user = await serializeUser(row, { includeEmail: true });
+    res.json({ token, user });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

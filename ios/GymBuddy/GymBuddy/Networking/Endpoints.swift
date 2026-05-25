@@ -9,10 +9,11 @@ public struct Endpoint {
     public let path: String
 
     // Auth
-    public static let register = Endpoint(method: .POST, path: "/auth/register")
-    public static let login    = Endpoint(method: .POST, path: "/auth/login")
-    public static let refresh  = Endpoint(method: .POST, path: "/auth/refresh")
-    public static let me       = Endpoint(method: .GET, path: "/auth/me")
+    public static let register   = Endpoint(method: .POST, path: "/auth/register")
+    public static let login      = Endpoint(method: .POST, path: "/auth/login")
+    public static let googleAuth = Endpoint(method: .POST, path: "/auth/google")
+    public static let refresh    = Endpoint(method: .POST, path: "/auth/refresh")
+    public static let me         = Endpoint(method: .GET, path: "/auth/me")
 
     // Users
     public static let usersMe        = Endpoint(method: .GET, path: "/users/me")

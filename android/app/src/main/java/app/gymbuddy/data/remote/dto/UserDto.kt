@@ -89,3 +89,8 @@ data class ErrorBody(val error: ErrorPayload)
 
 @Serializable
 data class ErrorPayload(val code: String, val message: String)
+
+@Serializable
+data class AuthRequestGoogle(
+    val idToken: String,
+)

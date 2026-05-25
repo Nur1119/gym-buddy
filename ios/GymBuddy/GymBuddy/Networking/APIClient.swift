@@ -117,6 +117,13 @@ public final class APIClient {
         return res
     }
 
+    public func loginWithGoogle(idToken: String) async throws -> AuthResponse {
+        struct Body: Encodable { let idToken: String }
+        let res: AuthResponse = try await send(.googleAuth, body: Body(idToken: idToken), authenticated: false)
+        TokenStore.shared.save(res.token)
+        return res
+    }
+
     public func currentUser() async throws -> User {
         try await send(.me)
     }

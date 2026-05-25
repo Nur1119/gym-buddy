@@ -46,12 +46,23 @@
         <string>ru</string>
     </array>
     <key>API_BASE_URL</key>
-    <string>http://localhost:3000/api/v1</string>
+    <string>https://gymbuddy-api-sc8p.onrender.com/api/v1</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>GymBuddy needs photo access to set your profile photos.</string>
     <key>NSCameraUsageDescription</key>
     <string>GymBuddy uses the camera to capture profile and exercise photos.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>GymBuddy uses your location to find nearby gym buddies.</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.YOUR_CLIENT_ID</string>
+            </array>
+            <key>CFBundleURLName</key>
+            <string>Google Sign-In</string>
+        </dict>
+    </array>
 </dict>
 </plist>

@@ -28,6 +28,9 @@ interface ApiService {
     @POST("auth/login")
     suspend fun login(@Body req: AuthRequestLogin): AuthResponse
 
+    @POST("auth/google")
+    suspend fun loginWithGoogle(@Body req: AuthRequestGoogle): AuthResponse
+
     @POST("auth/refresh")
     suspend fun refresh(): TokenResponse
 

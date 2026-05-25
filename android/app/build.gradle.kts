@@ -24,14 +24,16 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000/api/v1/\"")
-            buildConfigField("String", "WS_BASE_URL", "\"ws://10.0.2.2:3000/api/v1\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://gymbuddy-api-sc8p.onrender.com/api/v1/\"")
+            buildConfigField("String", "WS_BASE_URL", "\"wss://gymbuddy-api-sc8p.onrender.com/api/v1\"")
+            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"YOUR_WEB_CLIENT_ID.apps.googleusercontent.com\"")
         }
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             buildConfigField("String", "API_BASE_URL", "\"https://api.gymbuddy.app/api/v1/\"")
             buildConfigField("String", "WS_BASE_URL", "\"wss://api.gymbuddy.app/api/v1\"")
+            buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"YOUR_WEB_CLIENT_ID.apps.googleusercontent.com\"")
         }
     }
 
@@ -89,6 +91,7 @@ dependencies {
 
     implementation(libs.coil.compose)
     implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.play.services.auth)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
