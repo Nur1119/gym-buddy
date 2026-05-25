@@ -152,7 +152,7 @@ fun SwipeCard(
                     style = TextStyle(fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.5).sp),
                 )
                 Text(
-                    text = user.age.toString(),
+                    text = user.age?.toString() ?: "",
                     color = Color.White.copy(alpha = 0.95f),
                     style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Normal),
                 )
