@@ -137,6 +137,17 @@ router.delete('/me/photos/:photoId', authRequired, async (req, res, next) => {
   }
 });
 
+router.post('/me/fcm-token', authRequired, async (req, res, next) => {
+  try {
+    const { fcmToken } = req.body;
+    if (!fcmToken) return res.status(400).json({ error: { code: 'bad_request', message: 'fcmToken required' } });
+    await knex('users').where({ id: req.userId }).update({ fcm_token: fcmToken });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/:id', authRequired, async (req, res, next) => {
   try {
     const row = await knex('users').where({ id: req.params.id }).first();

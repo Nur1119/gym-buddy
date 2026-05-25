@@ -7,6 +7,7 @@ const { authRequired } = require('../middleware/auth');
 const { validate, validateQuery } = require('../middleware/validate');
 const { serializeMessage } = require('../services/serializers');
 const { broadcastToMatch } = require('../ws/chat');
+const fcm = require('../services/fcm');
 
 const router = express.Router({ mergeParams: true });
 
@@ -80,6 +81,15 @@ router.post('/', authRequired, validate(createSchema), async (req, res, next) =>
     await knex('matches').where({ id: match.id }).update({ last_activity_at: knex.fn.now() });
     const out = serializeMessage(row);
     broadcastToMatch(match.id, { type: 'message', data: out });
+
+    // Push notification to the other participant
+    const otherId = match.user_a === req.userId ? match.user_b : match.user_a;
+    const sender = await knex('users').where({ id: req.userId }).first();
+    const other  = await knex('users').where({ id: otherId }).first();
+    if (other?.fcm_token) {
+      fcm.send(other.fcm_token, sender?.name ?? 'GymBuddy', out.text ?? '📷 Image', { type: 'message' });
+    }
+
     res.status(201).json(out);
   } catch (err) {
     next(err);

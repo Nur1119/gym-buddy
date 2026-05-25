@@ -19,6 +19,8 @@ services:
         fromDatabase:
           name: gymbuddy-db
           property: connectionString
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
 
 databases:
   - name: gymbuddy-db

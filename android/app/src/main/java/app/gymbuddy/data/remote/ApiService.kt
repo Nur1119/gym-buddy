@@ -41,6 +41,9 @@ interface ApiService {
     @GET("users/me")
     suspend fun getMe(): UserDto
 
+    @POST("users/me/fcm-token")
+    suspend fun updateFcmToken(@Body req: app.gymbuddy.fcm.FcmTokenRequest)
+
     @PATCH("users/me")
     suspend fun updateMe(@Body req: UpdateProfileRequest): UserDto
 
