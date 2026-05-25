@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: gymbuddy-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm run migrate && npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 30d
+      - key: DATABASE_URL
+        fromDatabase:
+          name: gymbuddy-db
+          property: connectionString
+
+databases:
+  - name: gymbuddy-db
+    plan: free
+    region: frankfurt
+    databaseName: gymbuddy
+    user: gymbuddy
